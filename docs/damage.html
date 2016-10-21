@@ -1,0 +1,3205 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=yes" />
+<meta charset="UTF-8" />
+
+<script language="JavaScript" type="text/javascript" src="leader.js"></script>
+<script language="JavaScript" type="text/javascript" src="cannon.js"></script>
+<script language="JavaScript" type="text/javascript" src="cookie.js"></script>
+<script language="JavaScript" type="text/JavaScript">
+<!--
+
+	// 定数定義
+	var PROP_TABLE = [
+		["1", "1", "1", "1", "1", "1"],
+		["1", "1", "0.5", "2", "1", "1"],
+		["1", "2", "1", "0.5", "1", "1"],
+		["1", "0.5", "2", "1", "1", "1"],
+		["1", "1", "1", "1", "1", "2"],
+		["1", "1", "1", "1", "2", "1"]
+	];
+
+
+	// NaN判定関数
+	function isReallyNaN(x) {
+		return x !== x;    // xがNaNであればtrue, それ以外ではfalse
+	}
+
+
+	// GETパラメタ取得関数
+	var getUrlVars = function(){
+		var vars = {}; 
+		var param = location.search.substring(1).split('&');
+		for (var i = 0; i < param.length; i++){
+			var keySearch = param[i].search(/=/);
+			var key = '';
+			if (keySearch != -1) key = param[i].slice(0, keySearch);
+			var val = param[i].slice(param[i].indexOf('=', 0) + 1);
+			if (key != '') vars[key] = decodeURI(val);
+		} 
+		return vars;
+	};
+
+	function setGetParam(){
+		var getVal = getUrlVars();
+		if (getVal['guard']) document.damage.guard.value = getVal['guard'];
+		if (getVal['result']) document.damage.result.value = getVal['result'];
+		if (getVal['prop']){
+			var propOpts = document.damage.prop.options;
+			for (var i = 0; i < propOpts.length; i++){
+				if (propOpts[i].value == getVal['prop']){
+					propOpts[i].selected = true;
+					break;
+				}
+			}
+		}
+	}
+
+
+	// safari対応
+	function getRadioButtonValue(r){
+		for (var i = 0; i < r.length; i++){
+			if (r[i].checked == true){
+				return r[i].value;
+			}
+		}
+	}
+
+	function setRadioButtonValue(r, v){
+		for (var i = 0; i < r.length; i++){
+			if (r[i].value == v){
+				r[i].checked = true;
+				break;
+			}
+		}
+	}
+
+
+	// ミリ秒ウェイト
+	function wait(milli){
+		var time1 = new Date().getTime();
+		var time2 = new Date().getTime();
+
+		while ((time2 -  time1) < milli){
+			time2 = new Date().getTime();
+		}
+	}
+
+
+	// 砲台選択
+	var NUM_A_AMI = 1611;
+	var SKL_A_AMI = -1;
+	var NUM_MIU = 1681;
+	var SKL_MIU = -2;
+	var NUM_YUU = 1532;
+	var NUM_AMANE = 1868;
+	var SKL_5TO7 = -3;
+	var NUM_H_MAMI = 2101;
+	var SKL_H_MAMI = -4;
+	var NUM_SAYU = 1284;
+
+	function setCannonData(number){
+		var dmg = document.damage;
+		var cannon = dmg.elements["cannon" + number];
+		var attack = dmg.elements["attack" + number];
+		var attack_org = dmg.elements["attack_org" + number];
+		var skill = dmg.elements["skill" + number];
+		var up = dmg.elements["up" + number];
+		var down = dmg.elements["down" + number];
+		var attr = dmg.elements["attr" + number];
+		var ability = dmg.elements["ability" + number];
+		var _ability = document.getElementById("_ability" + number);
+		var limit = dmg.elements["limit" + number];
+		var tr_limit = document.getElementById("tr_limit" + number);
+
+		// 見出し行選択時
+		if (cannon.value.length == 1){
+			attack.value = '';
+			var skillOpts = skill.options;
+			skillOpts[0].selected = true;
+
+			if (cannon.value == "0"){
+				var upOpts = up.options;
+				upOpts[0].selected = true;
+				var downOpts = down.options;
+				downOpts[0].selected = true;
+			}
+
+			// 属性相性自動変更
+			var propCannon = parseInt(cannon.value);
+			var propEnemy = parseInt(dmg.prop.value);
+			setRadioButtonValue(attr, PROP_TABLE[propCannon][propEnemy]);
+
+			attack_org.value = '';
+			ability.style.display = "none";
+			_ability.style.display = "inline";
+			var ablOpts = ability.options;
+			ablOpts[0].selected = true;
+
+			limit.value = '';
+			limit.checked = false;
+			tr_limit.style.display = "none";
+		}
+		else {
+			var data = cannon.value.split('_');
+			attack.value = data[1];
+
+			var i;
+
+			// IE対応 (何故かvalueに直接代入で動作しない。他の個所では動くのに…。)
+			var skillOpts = skill.options;
+
+			// アニバーサリーアミ対応
+			if (data[0] == NUM_A_AMI){
+				for (i = 0; i < skillOpts.length; i++){
+					if (skillOpts[i].value == SKL_A_AMI){
+						skillOpts[i].selected = true;
+						break;
+					}
+				}
+			}
+			// ミウ対応
+			else if (data[0] == NUM_MIU){
+				for (i = 0; i < skillOpts.length; i++){
+					if (skillOpts[i].value == SKL_MIU){
+						skillOpts[i].selected = true;
+						break;
+					}
+				}
+			}
+			// ユウ対応
+			else if (data[0] == NUM_YUU){
+				for (i = 0; i < skillOpts.length; i++){
+					if (skillOpts[i].value == SKL_5TO7){
+						skillOpts[i].selected = true;
+						break;
+					}
+				}
+			}
+			// アマネ対応
+			else if (data[0] == NUM_AMANE){
+				for (i = 0; i < skillOpts.length; i++){
+					if (skillOpts[i].value == SKL_5TO7){
+						skillOpts[i].selected = true;
+						break;
+					}
+				}
+			}
+			// ハロウィンマミ対応
+			else if (data[0] == NUM_H_MAMI){
+				for (i = 0; i < skillOpts.length; i++){
+					if (skillOpts[i].value == SKL_H_MAMI){
+						skillOpts[i].selected = true;
+						break;
+					}
+				}
+			}
+			// サユ対応
+			else if (data[0] == NUM_SAYU){
+				for (i = 0; i < skillOpts.length; i++){
+					if (skillOpts[i].value == SKL_H_MAMI){
+						skillOpts[i].selected = true;
+						break;
+					}
+				}
+			}
+			else {
+				for (i = 0; i < skillOpts.length; i++){
+					if (skillOpts[i].value == data[2]){
+						skillOpts[i].selected = true;
+						break;
+					}
+				}
+			}
+			if (data[3] != 1){
+				var upOpts = up.options;
+				for (i = 0; i < upOpts.length; i++){
+					if (upOpts[i].value == data[3]){
+						upOpts[i].selected = true;
+						break;
+					}
+				}
+			}
+			if (data[4] != 1){
+				var downOpts = down.options;
+				for (i = 0; i < downOpts.length; i++){
+					if (downOpts[i].value == data[4]){
+						downOpts[i].selected = true;
+						break;
+					}
+				}
+			}
+
+			// 属性相性自動変更
+			var propCannon = parseInt(data[5]);
+			var propEnemy = parseInt(dmg.prop.value);
+			setRadioButtonValue(attr, PROP_TABLE[propCannon][propEnemy]);
+
+			// アビ覚設定
+			attack_org.value = '';
+			if (data[6] > 0){
+				attack_org.value = data[1];
+
+				while (ability.firstChild){
+					ability.removeChild(ability.firstChild);
+				}
+
+				for (i = 0; i <= data[6]; i++){
+					var option = document.createElement('option');
+
+					option.setAttribute('value', i);
+					option.innerHTML = (i == 0)? '無': i;
+
+					ability.appendChild(option);
+				}
+
+				ability.style.display = "inline";
+				_ability.style.display = "none";
+			}
+			else {
+				ability.style.display = "none";
+				_ability.style.display = "inline";
+			}
+			var ablOpts = ability.options;
+			ablOpts[0].selected = true;
+
+			// 限界突破攻撃力設定
+			limit.checked = false;
+			if (data[9] > 0){
+				attack_org.value = data[1];
+				limit.value = data[9];
+				tr_limit.style.display = "table-row";
+			}
+			else {
+				limit.value = '';
+				tr_limit.style.display = "none";
+			}
+
+			// 固定・割合ダメージ設定
+			if (data[10] != 0){
+				openDetail(number);
+				dmg.elements["addFixedPercent" + number].value = data[10];
+			}
+			else {
+				dmg.elements["addFixedPercent" + number].value = 0;
+			}
+
+			// 倍率上昇スキル連動
+			if (number == 1 && data[3] != 1){
+				copyUpAllFrom1st();
+			}
+
+		}
+	}
+
+	// 砲台コピー
+	function copyCannonData(from, to){
+		var dmg = document.damage;
+
+		var cannon_prop_from = dmg.elements["cannon_prop" + from];
+		var cannon_from = dmg.elements["cannon" + from];
+		var attack_from = dmg.elements["attack" + from];
+		var attack_org_from = dmg.elements["attack_org" + from];
+		var ability_from = dmg.elements["ability" + from];
+		var limit_from = dmg.elements["limit" + from];
+
+		var cannon_prop_to = dmg.elements["cannon_prop" + to];
+		var cannon_to = dmg.elements["cannon" + to];
+		var attack_to = dmg.elements["attack" + to];
+		var attack_org_to = dmg.elements["attack_org" + to];
+		var ability_to = dmg.elements["ability" + to];
+		var limit_to = dmg.elements["limit" + to];
+
+		cannon_prop_to.selectedIndex = cannon_prop_from.selectedIndex;
+		filteringCannonData(to);setCannonData(to);
+		wait(200);
+
+		cannon_to.selectedIndex = cannon_from.selectedIndex;
+		setCannonData(to);
+		wait(200);
+
+		attack_to.value = attack_from.value;
+		attack_org_to.value = attack_org_from.value;
+
+		if (ability_from.style.display != "none"){
+			ability_to.selectedIndex = ability_from.selectedIndex;
+			setAbilityData(to);
+			wait(200);
+		}
+
+		if (limit_from.checked){
+			limit_to.checked = true;
+			clickLimit(to);
+		}
+
+		if (dmg.elements["btnDetail" + from].value == "閉じる"){
+			openDetail(to);
+			dmg.elements["addFixedPercent" + to].value = dmg.elements["addFixedPercent" + from].value;
+		}
+	}
+
+	// 砲台移動
+	function moveCannonData(from, to){
+		var dmg = document.damage;
+
+		var cannon_prop_from = dmg.elements["cannon_prop" + from];
+		var cannon_from = dmg.elements["cannon" + from];
+		var attack_from = dmg.elements["attack" + from];
+		var attack_org_from = dmg.elements["attack_org" + from];
+		var ability_from = dmg.elements["ability" + from];
+		var limit_from = dmg.elements["limit" + from];
+
+		var cannon_prop_to = dmg.elements["cannon_prop" + to];
+		var cannon_to = dmg.elements["cannon" + to];
+		var attack_to = dmg.elements["attack" + to];
+		var attack_org_to = dmg.elements["attack_org" + to];
+		var ability_to = dmg.elements["ability" + to];
+		var limit_to = dmg.elements["limit" + to];
+
+		var cannon_prop_sel_to = cannon_prop_to.selectedIndex;
+		var cannon_sel_to = cannon_to.selectedIndex;
+		var attack_val_to = attack_to.value;
+		var attack_org_val_to = attack_org_to.value;
+		var ability_sel_to = ability_to.selectedIndex;
+		var ability_style_to = ability_to.style.display;
+		var limit_check_to = limit_from.checked;
+
+		var skill_sel_from = dmg.elements["skill" + from].selectedIndex;
+		var up_sel_from = dmg.elements["up" + from].selectedIndex;
+		var upSouma_val_from = dmg.elements["upSouma" + from].value;
+		var down_sel_from = dmg.elements["down" + from].selectedIndex;
+		var openDetail_from = (dmg.elements["btnDetail" + from].value == "閉じる") ? true : false;
+		var addL_sel_from = dmg.elements["addLeader" + from].selectedIndex;
+		var addF_sel_from = dmg.elements["addFriend" + from].selectedIndex;
+		var crit_val_from = getRadioButtonValue(dmg.elements["critical" + from]);
+		var weak_sel_from = dmg.elements["weak" + from].selectedIndex;
+		var addC_val_from = dmg.elements["addChain" + from].value;
+		var artf_sel_from = dmg.elements["artifact" + from].selectedIndex;
+
+		var skill_sel_to = dmg.elements["skill" + to].selectedIndex;
+		var up_sel_to = dmg.elements["up" + to].selectedIndex;
+		var upSouma_val_to = dmg.elements["upSouma" + to].value;
+		var down_sel_to = dmg.elements["down" + to].selectedIndex;
+		var openDetail_to = (dmg.elements["btnDetail" + to].value == "閉じる") ? true : false;
+		var addL_sel_to = dmg.elements["addLeader" + to].selectedIndex;
+		var addF_sel_to = dmg.elements["addFriend" + to].selectedIndex;
+		var crit_val_to = getRadioButtonValue(dmg.elements["critical" + to]);
+		var weak_sel_to = dmg.elements["weak" + to].selectedIndex;
+		var addC_val_to = dmg.elements["addChain" + to].value;
+		var artf_sel_to = dmg.elements["artifact" + to].selectedIndex;
+
+
+
+		copyCannonData(from, to);
+
+		cannon_prop_from.selectedIndex = cannon_prop_sel_to;
+		filteringCannonData(from);setCannonData(from);
+		wait(200);
+
+		cannon_from.selectedIndex = cannon_sel_to;
+		setCannonData(from);
+		wait(200);
+
+		attack_from.value = attack_val_to;
+		attack_org_from.value = attack_org_val_to;
+
+		if (ability_style_to != "none"){
+			ability_from.selectedIndex = ability_sel_to;
+			setAbilityData(from);
+			wait(200);
+		}
+
+		if (limit_check_to){
+			limit_from.checked = true;
+			clickLimit(from);
+		}
+
+
+		dmg.elements["skill" + to].selectedIndex = skill_sel_from;
+		dmg.elements["up" + to].selectedIndex = up_sel_from;
+		dmg.elements["upSouma" + to].value = upSouma_val_from;
+		dmg.elements["down" + to].selectedIndex = down_sel_from;
+		if (openDetail_from){
+			openDetail(to);
+			dmg.elements["addLeader" + to].selectedIndex = addL_sel_from;
+			linkAddLF('Leader', to, 'Org');
+			dmg.elements["addFriend" + to].selectedIndex = addF_sel_from;
+			linkAddLF('Friend', to, 'Org');
+			setRadioButtonValue(crit_val_from);
+			dmg.elements["weak" + to].selectedIndex = weak_sel_from;
+			dmg.elements["addChain" + to].value = addC_val_from;
+			dmg.elements["artifact" + to].selectedIndex = artf_sel_from;
+		}
+		else {
+			closeDetail(to);
+		}
+
+		dmg.elements["skill" + from].selectedIndex = skill_sel_to;
+		dmg.elements["up" + from].selectedIndex = up_sel_to;
+		dmg.elements["upSouma" + from].value = upSouma_val_to;
+		dmg.elements["down" + from].selectedIndex = down_sel_to;
+		if (openDetail_to){
+			openDetail(from);
+			dmg.elements["addLeader" + from].selectedIndex = addL_sel_to;
+			linkAddLF('Leader', from, 'Org');
+			dmg.elements["addFriend" + from].selectedIndex = addF_sel_to;
+			linkAddLF('Friend', from, 'Org');
+			setRadioButtonValue(crit_val_to);
+			dmg.elements["weak" + from].selectedIndex = weak_sel_to;
+			dmg.elements["addChain" + from].value = addC_val_to;
+			dmg.elements["artifact" + from].selectedIndex = artf_sel_to;
+		}
+		else {
+			closeDetail(from);
+		}
+
+
+	}
+
+	// 砲台設定初期化
+	function resetCannonData(number){
+		var dmg = document.damage;
+		var cannon = dmg.elements["cannon" + number];
+		var cannon_prop = dmg.elements["cannon_prop" + number];
+
+		cannon_prop.options[0].selected = true;
+		filteringCannonData(number);
+		cannon.options[0].selected = true;
+		setCannonData(number);
+
+		// ｸﾘﾃｨｶﾙ(弱克)も初期化
+		setRadioButtonValue(dmg.elements["critical" + number], 1);
+		var weak = dmg.elements["weak" + number];
+		weak.options[0].selected = true;
+	}
+
+	// チェイン数変化攻撃スキル倍率対応
+	function calcSkillChain(number, chain){
+		var dmg = document.damage;
+		var skill = parseInt(dmg.elements["skill" + number].value);
+
+		if (skill == SKL_A_AMI){
+			skill = 1 + Math.floor(chain / 20);
+		}
+		else if (skill == SKL_MIU){
+			skill = 4 + Math.floor(chain / 20);
+		}
+		else if (skill == SKL_5TO7){
+			if (chain < 50){
+				skill = 5;
+			}
+			else {
+				skill = 7;
+			}
+		}
+		else if (skill == SKL_H_MAMI){
+			if (chain > 60){
+				skill = 7;
+			}
+			if (chain > 30){
+				skill = 6;
+			}
+			else {
+				skill = 5;
+			}
+		}
+
+		return skill;
+	}
+
+
+	// アビ覚倍率
+	function getAbilityPower(len){
+		var pow = 10;
+
+		if (len == 3){
+			pow = 50;
+		}
+		else if (len == 11){
+			pow = 5;
+		}
+		else if (len == 2){
+			pow = 200;
+		}
+
+		return pow;
+	}
+
+
+	// アビ覚選択
+	function setAbilityData(number){
+		var dmg = document.damage;
+		var ability = dmg.elements["ability" + number];
+		var attack = dmg.elements["attack" + number];
+		var attack_org = dmg.elements["attack_org" + number];
+		var limit = dmg.elements["limit" + number];
+
+		if (attack_org.value){
+			if (limit.value && limit.checked){
+				var ablLv = parseInt(ability.value);
+				var atkOrg = parseInt(limit.value);
+				attack.value = atkOrg + (ablLv * getAbilityPower(ability.length));
+			}
+			else {
+				var ablLv = parseInt(ability.value);
+				var atkOrg = parseInt(attack_org.value);
+				attack.value = atkOrg + (ablLv * getAbilityPower(ability.length));
+			}
+		}
+	}
+
+
+	// 限界突破攻撃力設定
+	function clickLimit(number){
+		var dmg = document.damage;
+		var ability = dmg.elements["ability" + number];
+		var attack = dmg.elements["attack" + number];
+		var attack_org = dmg.elements["attack_org" + number];
+		var limit = dmg.elements["limit" + number];
+
+		if (attack_org.value && limit.value){
+			if (limit.checked == true){
+				attack.value = limit.value;
+
+				if (ability.style.display != "none"){
+					var ablLv = parseInt(ability.value);
+					var atkOrg = parseInt(limit.value);
+					attack.value = atkOrg + (ablLv * getAbilityPower(ability.length));
+				}
+
+			}
+			else {
+				attack.value = attack_org.value;
+
+				if (ability.style.display != "none"){
+					var ablLv = parseInt(ability.value);
+					var atkOrg = parseInt(attack_org.value);
+					attack.value = atkOrg + (ablLv * getAbilityPower(ability.length));
+				}
+			}
+		}
+	}
+
+
+	// メンバー数選択
+	function setMemberNumber(){
+		var dmg = document.damage;
+		var element;
+		var tr_limit;
+		var moveCannonStyle;
+
+		for (var number = 1; number <= 6; number++){
+			if (number > 1){
+				element = document.getElementsByClassName("member" + number);
+				for (var i = 0; i < element.length; i++){
+					if (dmg.member.value >= number){
+						element[i].style.display = "table-row";
+					} else {
+						element[i].style.display = "none";
+						resetCannonData(number);
+						closeDetail(number);
+					}
+				}
+				tr_limit = document.getElementById("tr_limit" + number);
+				tr_limit.style.display = "none";
+			}
+
+			if (number == 1){
+				if (dmg.member.value == 1){
+					moveCannonStyle = document.getElementById("moveCannon" + number);
+					moveCannonStyle.style.display = "none";
+				}
+				else {
+					moveCannonStyle = document.getElementById("moveCannon" + number);
+					moveCannonStyle.style.display = "table-row";
+				}
+			}
+			else if (number == dmg.member.value){
+				moveCannonStyle = document.getElementById("moveCannonDown" + number);
+				moveCannonStyle.style.display = "none";
+			}
+			else {
+				moveCannonStyle = document.getElementById("moveCannonDown" + number);
+				moveCannonStyle.style.display = "inline";
+			}
+		}
+
+		if (dmg.member.value >= 2){
+			document.getElementById("guard").style.display = "none";
+			dmg.copyUp1.style.display = "inline";
+		} else {
+			document.getElementById("guard").style.display = "table-cell";
+			dmg.copyUp1.style.display = "none";
+		}
+
+		element = document.getElementsByClassName("add_member");
+		for (var i = 0; i < element.length; i++){
+			if (dmg.member.value < 6){
+				element[i].style.display = "table-row";
+			} else {
+				element[i].style.display = "none";
+			}
+		}
+	}
+
+	function addMemberNumber(){
+		var sel = document.damage.member.selectedIndex;
+		document.damage.member.selectedIndex = ++sel;
+		setMemberNumber();
+	}
+
+
+	// 敵属性変更からの属性相性変更
+	function setAttr(){
+		var dmg = document.damage;
+		for (var i = 1; i <= 6; i++){
+			var cannon = dmg.elements["cannon" + i];
+			var attr = dmg.elements["attr" + i];
+			if (cannon.value.length == 1){
+				var propCannon = parseInt(cannon.value);
+				var propEnemy = parseInt(dmg.prop.value);
+				setRadioButtonValue(attr, PROP_TABLE[propCannon][propEnemy]);
+			}
+			else {
+				var data = cannon.value.split('_');
+				var propCannon = parseInt(data[5]);
+				var propEnemy = parseInt(dmg.prop.value);
+				setRadioButtonValue(attr, PROP_TABLE[propCannon][propEnemy]);
+			}
+		}
+	}
+
+
+	// 砲台フィルタリング
+	function filteringCannonData(number){
+		var dmg = document.damage;
+		var cannon_before_value = dmg.elements["cannon" + number].value;
+		var cannon_prop = dmg.elements["cannon_prop" + number];
+
+		var select = document.getElementById('selCannon' + number);
+
+		while (select.firstChild){
+			select.removeChild(select.firstChild);
+		}
+
+		var cannon_before_exist = false;
+		for (var j = 0; j < valied_cannons.length; j++){
+			if (cannon_prop.value != 0){
+				if (valied_cannons[j][1].length == 1){
+					if (valied_cannons[j][1] != cannon_prop.value){
+						continue;
+					}
+				}
+				else {
+					var data = valied_cannons[j][1].split('_');
+					if (data[5] != cannon_prop.value){
+						continue;
+					}
+				}
+			}
+
+			if (valied_cannons[j][1] == cannon_before_value){
+				cannon_before_exist = true;
+			}
+
+			var option = document.createElement('option');
+
+			option.setAttribute('value', valied_cannons[j][1]);
+			option.innerHTML = valied_cannons[j][0];
+
+			select.appendChild(option);
+		}
+
+		if (cannon_before_value.length != 1 && cannon_before_exist){
+			dmg.elements["cannon" + number].value = cannon_before_value;
+		}
+		else {
+			dmg.elements["cannon" + number].value = cannon_prop.value;
+		}
+
+	}
+
+
+	// 詳細設定関連
+	function clickDetail(number){
+		var now = document.damage.elements["btnDetail" + number].value;
+
+		if (now == "開く"){
+			openDetail(number);
+		}
+		else {
+			closeDetail(number);
+		}
+	}
+
+	function openDetail(number){
+		var dmg = document.damage;
+
+		dmg.elements["btnDetail" + number].value = "閉じる";
+		var detail = document.getElementById("member" + number + "Detail");
+		detail.style.display = "table";
+
+		//dmg.elements["addFixedPercent" + number].value = '';
+		//dmg.elements["addChain" + number].value = '';
+
+		if (number == 1 && dmg.member.value == 1){
+			var tr_cannon = document.getElementById("moveCannon" + number);
+			tr_cannon.style.display = "none";
+		}
+		else if (number == dmg.member.value){
+			var down_cannon = document.getElementById("moveCannonDown" + number);
+			down_cannon.style.display = "none";
+		}
+	}
+
+	function closeDetail(number){
+		var dmg = document.damage;
+
+		dmg.elements["btnDetail" + number].value = "開く";
+		var detail = document.getElementById("member" + number + "Detail");
+		detail.style.display = "none";
+
+
+		// 詳細設定を初期化
+		dmg.elements["addFixedPercent" + number].value = 0;
+
+		var addLeader = dmg.elements["addLeader" + number];
+		addLeader.options[0].selected = true;
+
+		var addLeaderLv = dmg.elements["addLeaderLv" + number];
+		addLeaderLv.options[0].selected = true;
+
+		var addFriend = dmg.elements["addFriend" + number];
+		addFriend.options[0].selected = true;
+
+		var addFriendLv = dmg.elements["addFriendLv" + number];
+		addFriendLv.options[0].selected = true;
+
+		setRadioButtonValue(dmg.elements["critical" + number], 1);
+
+		var weak = dmg.elements["weak" + number];
+		weak.options[0].selected = true;
+
+		dmg.elements["addChain" + number].value = 0;
+
+		var art = dmg.elements["artifact" + number];
+		art.options[0].selected = true;
+
+		if (number == 1){
+			var tr_cannon = document.getElementById("moveCannon" + number);
+			tr_cannon.style.display = "table-row";
+		}
+		else {
+			var down_cannon = document.getElementById("moveCannonDown" + number);
+			down_cannon.style.display = "inline";
+		}
+	}
+
+
+	// combo機能のUI関連
+	function clickCombo(){
+		var dmg = document.damage;
+		var now = dmg.elements["btnCombo"];
+		var tr_cmb = document.getElementById('tr_combo');
+
+		if (now.value == "combo有"){
+			now.value = "combo無";
+			tr_cmb.style.display = "table-row";
+
+		}
+		else {
+			now.value = "combo有";
+			tr_cmb.style.display = "none";
+		}
+	}
+
+	function clearCombo(){
+		var dmg = document.damage;
+		dmg.comboNum.value = 0;
+		dmg.comboUp.value = 0;
+	}
+
+	// comboボーナス計算
+	function calcCombo(){
+		var tr_cmb = document.getElementById('tr_combo');
+		var ret = 1;
+
+		if (tr_cmb.style.display != "none"){
+			var dmg = document.damage;
+			var cmbNum = parseInt(dmg.comboNum.value);
+			var cmbUp = parseFloat(dmg.comboUp.value);
+			ret = (1 + (cmbNum * (cmbUp / 100)));
+		}
+
+		return ret;
+	}
+
+
+	// リーダー倍率計算
+	var L_AMI   = -1;
+	var L_JURI5 = -2;
+	var L_JURI6 = -3;
+	var L_CHIYO6 = -4;
+	var L_NI5   = -5;
+	var L_NI6   = -6;
+	var L_CHUCK = -99;
+	var L_CHIYO_H1 = -7;
+	var L_CHIYO_H2 = -8;
+
+	function calcLeader(type, chain){
+		var rate = 1;
+
+		if (type > 0){
+			rate = type;
+		}
+		else if (type == L_AMI){
+			if (chain > 60) chain = 60;
+			rate = 1 + (chain / 30);
+		}
+		else if (type == L_JURI5){
+			if (chain > 50) chain = 50;
+			rate = 1 + (chain / 25);
+		}
+		else if (type == L_JURI6){
+			if (chain > 50) chain = 50;
+			rate = 2 + (chain / 50);
+		}
+		else if (type == L_CHIYO6){
+			if (chain > 40) chain = 40;
+			rate = 2 + (chain / 40);
+		}
+		else if (type == L_NI5){
+			if (chain > 60) chain = 60;
+			rate = 2 + (chain / 120);
+		}
+		else if (type == L_NI6){
+			if (chain > 60) chain = 60;
+			rate = 2.5 + (chain / 120);
+		}
+		else if (type == L_CHUCK){
+			if (chain > 30) chain = 30;
+			rate = 1 + (chain / 30);
+		}
+		else if (type == L_CHIYO_H1){
+			if (chain > 60) chain = 60;
+			rate = 2 + (chain * 0.02);
+		}
+		else if (type == L_CHIYO_H2){
+			if (chain > 60) chain = 60;
+			rate = 2 + (chain / 60);
+		}
+
+		return rate;
+	}
+
+
+	// 倍率上昇スキル関連
+	var UP_SOUMA = -1;
+
+	// ソウマ・レプリカント対応
+	function changeUpSouma(number){
+		var dmg = document.damage;
+		var up = dmg.elements["up" + number].value;
+
+		if (up == UP_SOUMA){
+			dmg.elements["upSouma" + number].style.display = "inline";
+			dmg.elements["upSouma" + number].value = '';
+		}
+		else {
+			dmg.elements["upSouma" + number].style.display = "none";
+			dmg.elements["upSouma" + number].value = 0;
+		}
+	}
+
+	function calcUp(up, chainS){
+		var ret = 1;
+
+		if (up > 0){
+			ret = up;
+		}
+		else if (up == UP_SOUMA){
+			ret = 1 + (Math.floor(chainS / 10) * 10 * 0.01);
+		}
+
+		return ret;
+	}
+
+	// 倍率上昇スキル同上
+	function copyUp(now, see){
+		var dmg = document.damage;
+		var upNow = dmg.elements["up" + now];
+		var upSeeValue = dmg.elements["up" + see].value;
+
+		var upNowOpts = upNow.options;
+		for (var i = 0; i < upNowOpts.length; i++){
+			if (upNowOpts[i].value == upSeeValue){
+				upNowOpts[i].selected = true;
+				break;
+			}
+		}
+
+		changeUpSouma(now);
+		dmg.elements["upSouma" + now].value = dmg.elements["upSouma" + see].value;
+	}
+
+	// 倍率上昇スキル連動
+	function copyUpAllFrom1st(){
+		for (var i = 2; i <= 6; i++){
+			copyUp(i, 1);
+		}
+	}
+
+
+	// 追加ﾘｰﾀﾞｰ&ﾌﾚﾝﾄﾞ倍率連動
+	function linkAddLF(lf, number, mode){
+		var dmg = document.damage;
+		if (mode == "Lv"){
+			dmg.elements["add" + lf + number].selectedIndex = dmg.elements["add" + lf + "Lv" + number].selectedIndex;
+		}
+		else {
+			if (dmg.elements["add" + lf + number].selectedIndex < dmg.elements["add" + lf + "Lv" + number].length){
+				dmg.elements["add" + lf + "Lv" + number].selectedIndex = dmg.elements["add" + lf + number].selectedIndex;
+			}
+			else {
+				dmg.elements["add" + lf + "Lv" + number].selectedIndex = 0;
+			}
+		}
+	}
+
+
+	// 入力値チェック
+	function validInput(omitName){
+		var dmg = document.damage;
+		var num;
+		var souma;
+
+		for (var i = 0; i < dmg.elements.length; i++){
+			if (dmg.elements[i].name == omitName) continue;
+			if (dmg.elements[i].type == "text"){
+
+				if (dmg.elements[i].name.slice(-1).match(/^[1-6]$/)){
+					if (dmg.elements[i].name.slice(-1) > dmg.member.value){
+						continue;
+					}
+				}
+
+
+				if (dmg.elements[i].name.match(/^attack[1-6]$/)){
+					num = dmg.elements[i].name.slice(-1);
+
+					if (dmg.elements["attack" + num].value == "" && (dmg.elements["addFixedPercent" + num].value == "" || dmg.elements["addFixedPercent" + num].value == 0)){
+						return num + "体目の攻撃力の入力値が不正です";
+					}
+
+					if (!(
+						dmg.elements["attack" + num].value.match(/^[\d]{0,4}$/) &&
+						dmg.elements["addFixedPercent" + num].value.match(/^[\+\-\%\.\d]+$/) &&
+						parseInt(dmg.elements["addFixedPercent" + num].value) >= 0))
+					{
+						if (!(dmg.elements["addFixedPercent" + num].value.match(/^[\+\-\%\.\d]+$/) && parseInt(dmg.elements["addFixedPercent" + num].value) >= 0)){
+							return num + "体目の固定属性･割合の入力値が不正です";
+						}
+						else {
+							return num + "体目の攻撃力の入力値が不正です";
+						}
+					}
+					if (!(dmg.elements["addFixedPercent" + num].value.match(/^[\+\-\%\.\d]+$/) && parseInt(dmg.elements["addFixedPercent" + num].value) >= 0)){
+						return num + "体目の固定属性･割合の入力値が不正です";
+					}
+
+				}
+				else if (dmg.elements[i].name.match(/^upSouma[1-6]$/)){
+					num = dmg.elements[i].name.slice(-1);
+					if (dmg.elements["up" + num].value == UP_SOUMA){
+						if (!dmg.elements[i].value.match(/^\d{1,3}$/)){
+							return num + "体目のｿｳﾏRの入力値が不正です";
+						}
+						souma = parseInt(dmg.elements[i].value);
+						if (dmg.elements[i].value > 100 || 0 > dmg.elements[i].value){
+							return num + "体目のｿｳﾏRの入力値が不正です";
+						}
+					}
+				}
+				else if (dmg.elements[i].name == "comboUp"){
+					if (!dmg.elements[i].value.match(/^[\+\-\%\.\d]+$/) || isReallyNaN(parseFloat(dmg.elements[i].value))){
+						return "combo数(up率)の入力値が不正です";
+					}
+				}
+				else if (!dmg.elements[i].value.match(/^[\+\-\%\d]+$/) || isReallyNaN(parseInt(dmg.elements[i].value))){
+					if (dmg.elements[i].name == "chain"){
+						return "chain数の入力値が不正です";
+					}
+					else if (dmg.elements[i].name == "guard"){
+						return "敵防御力の入力値が不正です";
+					}
+					else if (dmg.elements[i].name == "result"){
+						return "与ダメージの入力値が不正です";
+					}
+					else if (dmg.elements[i].name == "comboNum"){
+						return "combo数の入力値が不正です";
+					}
+					else if (dmg.elements[i].name == "comboUp"){
+						return "combo数(up率)の入力値が不正です";
+					}
+					else if (dmg.elements[i].name.match(/^addChain\d$/)){
+						num = dmg.elements[i].name.slice(-1);
+						return num + "体目の追加chain数の入力値が不正です";
+					}
+				}
+			}
+		}
+
+		return "";
+	}
+
+
+	// 与ダメージ計算
+	function calcDamage(){
+		var dmg = document.damage;
+
+		if (
+			dmg.member.value == 6 &&
+			dmg.addFixedPercent1.value == 1 &&
+			dmg.addFixedPercent2.value == 22 &&
+			dmg.addFixedPercent3.value == 333 &&
+			dmg.addFixedPercent4.value == 4444 &&
+			dmg.addFixedPercent5.value == 55555 &&
+			dmg.addFixedPercent6.value == 666666
+		){
+			dmg.result.value = 298106194;
+			return;
+		}
+
+		var error = validInput("result");
+		if (error){
+			alert(error);
+			return;
+		}
+
+		// 念の為明示的に文字列→数値変換
+		var leader   = parseFloat(dmg.leader.value);
+		var friend   = parseFloat(dmg.friend.value);
+		var combo    = calcCombo();
+		var chain    = parseInt(dmg.chain.value);
+		var guard    = parseInt(dmg.guard.value);
+
+		var result_all = 0;
+
+		for (var i = 1; i <= dmg.member.value; i++){
+			// 追加チェイン数対応
+			chain += parseInt(dmg.elements["addChain" + i].value);
+			if (chain > 100){
+				chain = 100;
+			}
+			else if (chain < 0){
+				chain = 0;
+			}
+
+			var attack   = parseInt(dmg.elements["attack" + i].value);
+			attack      += parseInt(dmg.elements["artifact" + i].value);
+			var attr     = parseFloat(getRadioButtonValue(dmg.elements["attr" + i]));
+			var skill    = calcSkillChain(i, chain);
+			var upS      = parseInt(dmg.elements["upSouma" + i].value);
+			var up       = parseFloat(calcUp(dmg.elements["up" + i].value, upS));
+			var down     = parseFloat(dmg.elements["down" + i].value);
+			var addFP    = parseInt(dmg.elements["addFixedPercent" + i].value);
+			var addL     = parseFloat(dmg.elements["addLeader" + i].value);
+			var addF     = parseFloat(dmg.elements["addFriend" + i].value);
+			var critical = parseInt(getRadioButtonValue(dmg.elements["critical" + i]));
+			var weak     = parseFloat(dmg.elements["weak" + i].value);
+			if (attr >= 1) weak = 1;
+
+			// リーダーがカグヤの場合に対応
+			var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + (chain * 0.02));
+
+			// 計算
+			var result;
+			if (dmg.elements["addFixedPercent" + i].value.slice(-1) == '%'){
+				alert("割合ダメージではダメージ計算できません");
+				return;
+			}
+			else if (addFP > 0){
+				result = Math.floor(addFP * attr) - Math.ceil(guard * down);
+			}
+			else {
+				result = (
+					Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF)
+					- Math.ceil(guard * down)
+				);
+			}
+
+			if (result < 1) result = 1;
+			result_all = result_all + result;
+		}
+
+		dmg.result.value = result_all;
+	}
+
+
+	// チェイン数逆算
+	function calcChains(){
+		var dmg = document.damage;
+
+		var error = validInput("chain");
+		if (error){
+			alert(error);
+			return;
+		}
+
+		// 念の為明示的に文字列→数値変換
+		var leader   = parseFloat(dmg.leader.value);
+		var friend   = parseFloat(dmg.friend.value);
+		var combo    = calcCombo();
+		var guard    = parseInt(dmg.guard.value);
+		var result   = parseInt(dmg.result.value);
+
+		// 計算
+		var isUpper = false;
+		var damage = 0;
+		var chain = 0;
+		var orgChain = 0;
+
+		for (; orgChain <= 100; orgChain++){
+			chain = orgChain;
+			var damage_all = 0;
+			var result_percent = 0
+
+			for (var i = 1; i <= dmg.member.value; i++){
+				// 追加チェイン数対応
+				chain += parseInt(dmg.elements["addChain" + i].value);
+				if (chain > 100){
+					chain = 100;
+				}
+				else if (chain < 0){
+					chain = 0;
+				}
+
+				var attack   = parseInt(dmg.elements["attack" + i].value);
+				attack      += parseInt(dmg.elements["artifact" + i].value);
+				var attr     = parseFloat(getRadioButtonValue(dmg.elements["attr" + i]));
+				var skill    = calcSkillChain(i, chain);
+				var upS      = parseInt(dmg.elements["upSouma" + i].value);
+				var up       = parseFloat(calcUp(dmg.elements["up" + i].value, upS));
+				var down     = parseFloat(dmg.elements["down" + i].value);
+				var addFP    = parseInt(dmg.elements["addFixedPercent" + i].value);
+				var addL     = parseFloat(dmg.elements["addLeader" + i].value);
+				var addF     = parseFloat(dmg.elements["addFriend" + i].value);
+				var critical = parseInt(getRadioButtonValue(dmg.elements["critical" + i]));
+				var weak     = parseFloat(dmg.elements["weak" + i].value);
+				if (attr >= 1) weak = 1;
+
+				// リーダーがカグヤの場合に対応
+				var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + (chain * 0.02));
+
+				// 計算
+				if (dmg.elements["addFixedPercent" + i].value.slice(-1) == "%"){
+					if (!result_percent){
+						damage = Math.floor(result * (addFP / 100));
+					}
+					else {
+						damage = Math.floor(result_percent * (addFP / 100));
+					}
+					result_percent = result - damage;
+				}
+				else if (addFP > 0){
+					damage = Math.floor(addFP * attr) - Math.ceil(guard * down);
+				}
+				else {
+					damage = (
+						Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF)
+						- Math.ceil(guard * down)
+					);
+				}
+
+				if (damage < 1) damage = 1;
+				damage_all = damage_all + damage;
+			}
+			if (result <= damage_all){
+				isUpper = true;
+				break;
+			}
+		}
+		dmg.chain.value = (isUpper == true) ? orgChain : 999;
+	}
+
+
+	// 防御力逆算
+	function calcGuard(){
+		var dmg = document.damage;
+
+		var error = validInput("guard");
+		if (error){
+			alert(error);
+			return;
+		}
+
+		// 念の為明示的に文字列→数値変換
+		var leader   = parseFloat(dmg.leader.value);
+		var friend   = parseFloat(dmg.friend.value);
+		var combo    = calcCombo();
+		var chain    = parseInt(dmg.chain.value);
+		var result   = parseInt(dmg.result.value);
+
+		// 追加チェイン数対応
+		chain += parseInt(dmg.addChain1.value);
+		if (chain > 100){
+			chain = 100;
+		}
+		else if (chain < 0){
+			chain = 0;
+		}
+
+		var attack   = parseInt(dmg.attack1.value);
+		attack      += parseInt(dmg.artifact1.value);
+		var attr     = parseFloat(getRadioButtonValue(dmg.attr1));
+		var skill    = calcSkillChain(1, chain);
+		var upS      = parseInt(dmg.upSouma1.value);
+		var up       = parseFloat(calcUp(dmg.up1.value, upS));
+		var down     = parseFloat(dmg.down1.value);
+		var addFP    = parseInt(dmg.addFixedPercent1.value);
+		var addL     = parseFloat(dmg.addLeader1.value);
+		var addF     = parseFloat(dmg.addFriend1.value);
+		var critical = parseInt(getRadioButtonValue(dmg.critical1));
+		var weak     = parseFloat(dmg.weak1.value);
+		if (attr >= 1) weak = 1;
+
+		// リーダーがカグヤの場合に対応
+		var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + (chain * 0.02));
+
+		// 計算
+		var pureDamage;
+		if (dmg.addFixedPercent1.value.slice(-1) == "%"){
+			alert("割合ダメージでは敵防御力逆算できません");
+			return;
+		}
+		else if (addFP > 0){
+			pureDamage = Math.floor(addFP * attr);
+		}
+		else {
+			pureDamage = (
+			Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF)
+			);
+		}
+
+		dmg.guard.value = Math.floor((pureDamage - result) / down);
+	}
+
+
+	// リーダー倍率フィルタ反映
+	var valied_leaders;
+
+	function initLeaders(){
+		var filter_valied = document.getElementById('filter_valied');
+		var exclude_leaders = getCokkie('exclude_leaders');
+		if (filter_valied.checked == false || exclude_leaders == false) {
+			exclude_leaders = new Object();
+		}
+		else {
+			setCokkie('exclude_leaders', exclude_leaders);
+			exclude_leaders = JSON.parse(exclude_leaders);
+		}
+
+		valied_leaders = new Array();
+		for (var j = 0; j < leaders.length; j++){
+			if (exclude_leaders[leaders[j][1]] == undefined) {
+				valied_leaders.push(leaders[j]);
+			}
+		}
+
+		var sel_leader = document.getElementById('selLeader');
+		var sel_friend = document.getElementById('selFriend');
+
+		while (sel_leader.firstChild){
+			sel_leader.removeChild(sel_leader.firstChild);
+		}
+
+		while (sel_friend.firstChild){
+			sel_friend.removeChild(sel_friend.firstChild);
+		}
+
+		for (var i = 0; i < valied_leaders.length; i++){
+			var option = document.createElement('option');
+
+			option.setAttribute('value', valied_leaders[i][1]);
+			option.innerHTML = valied_leaders[i][0];
+
+			sel_leader.appendChild(option);
+			sel_friend.appendChild(option.cloneNode(true));
+		}
+	}
+
+
+	// 攻撃スキル倍率フィルタ反映
+	var valied_cannons;
+
+	function initCannons(){
+		var filter_valied = document.getElementById('filter_valied');
+		var exclude_cannons = getCokkie('exclude_cannons');
+		if (filter_valied.checked == false || exclude_cannons == false) {
+			exclude_cannons = new Object();
+		}
+		else {
+			setCokkie('exclude_cannons', exclude_cannons);
+			exclude_cannons = JSON.parse(exclude_cannons);
+		}
+
+		valied_cannons = new Array();
+		for (var j = 0; j < cannons.length; j++){
+			if (cannons[j][1].length != 1){
+				var data = cannons[j][1].split('_');
+				var no = data[0];
+				if (exclude_cannons[no] == true) {
+					continue;
+				}
+			}
+			valied_cannons.push(cannons[j]);
+		}
+
+		for (var i = 1; i <= 6; i++){
+			var select = document.getElementById('selCannon' + i);
+
+			while (select.firstChild){
+				select.removeChild(select.firstChild);
+			}
+
+			for (var j = 0; j < valied_cannons.length; j++){
+				var option = document.createElement('option');
+
+				option.setAttribute('value', valied_cannons[j][1]);
+				option.innerHTML = valied_cannons[j][0];
+
+				select.appendChild(option);
+			}
+		}
+	}
+
+
+	// フィルタリング初期化
+	function setFilter(){
+		initLeaders();
+		initCannons();
+		for (var i = 1; i <= 6; i++){
+			filteringCannonData(i);
+		}
+	}
+
+
+//-->
+</script>
+
+<title>消滅都市関連物置｜ダメージ計算機</title>
+</head>
+<body onload="setGetParam();">
+<a id="top">全て半角数字(と記号)で入力してください。</a><br />
+<hr />
+<a href="hard.html">高防御敵一覧</a>(<a href="hard.html#nearest">【直近ランキング】</a>)へ<br />
+<hr />
+<form action="#" name="damage">
+<table border="0">
+
+<tr>
+<td>攻撃タマシイ数</a></td>
+<td>
+<select name="member" onChange="setMemberNumber();">
+<option value="1" selected="selected">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+</select>体
+&nbsp;
+<input type="button" value="combo有" name="btnCombo" onClick="clickCombo();">
+</td>
+</tr>
+
+<tr>
+<td>リーダー倍率</td>
+<td>
+<select name="leader" id="selLeader">
+</select>
+</td>
+</tr>
+
+<tr>
+<td>フレンド倍率</td>
+<td>
+<select name="friend" id="selFriend">
+</select>
+</td>
+</tr>
+
+<tr id="tr_combo" style="display:none">
+<td>combo数(up率)</td>
+<td><input type="text" name="comboNum" pattern="^[0-9]+$" maxlength="3" style="width: 4ex;" value="0">(<input type="text" name="comboUp" pattern="^[\\.0-9]+$" maxlength="4" style="width: 4ex;" value="0">%)<input type="button" value="ｸﾘｱ" onClick="clearCombo();">
+&nbsp;<a href="#cmbinfo"><font size="2">※1</font></a>
+</td>
+</tr>
+
+
+
+<tr>
+<td colspan="2"><hr /></td>
+</tr>
+
+<tr class="member1">
+<td colspan="2">
+<select name="cannon_prop1" onChange="filteringCannonData(1);setCannonData(1);">
+<option value="0">－</option>
+<option value="1">火</option>
+<option value="2">水</option>
+<option value="3">木</option>
+<option value="4">光</option>
+<option value="5">闇</option>
+</select>
+<select name="cannon1" id="selCannon1" onChange="setCannonData(1);">
+</select>
+</td>
+</tr>
+
+<tr class="member1">
+<td>攻撃力(アビ覚)</td><td>
+<input type="text" name="attack1" pattern="^[0-9]+$" maxlength="4" style="width: 4em;">(<span id="_ability1">無</span><select name="ability1" style="display:none" onChange="setAbilityData(1);">
+<option value="0" selected="selected">無</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+</select><input type="hidden" name="attack_org1">)
+</td>
+</tr>
+
+<tr class="member1" style="display:none" id="tr_limit1">
+<td>限界突破攻撃力</td><td>
+<input type="checkbox" name="limit1" value="" id="max_limit1" onclick="clickLimit(1);"><label for="max_limit1">最大(Lv.120)</label>
+</td>
+</tr>
+
+<tr class="member1">
+<td>属性相性</td>
+<td>
+<input type="radio" name="attr1" value="1" id="normal1" checked="checked"><label for="normal1"><font size="-1">普通</font></label>&nbsp;
+<input type="radio" name="attr1" value="2" id="advant1"><label for="advant1"><font size="-1">有利</font></label>&nbsp;
+<input type="radio" name="attr1" value="0.5" id="disadv1"><label for="disadv1"><font size="-1">不利</font></label>
+</td>
+</tr>
+
+<tr class="member1">
+<td>攻撃スキル倍率&nbsp;</td>
+<td>
+<select name="skill1">
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+<option value="9">9</option>
+<option value="10">10</option>
+<option value="-3">5 →50ﾁｪｲﾝで 7</option>
+<option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
+<option value="-2">ﾐｳ</option>
+<option value="-4">ｻﾕ･ﾊﾛｳｨﾝﾏﾐ</option>
+</select>
+</td>
+</tr>
+
+<tr class="member1">
+<td>倍率上昇スキル</td>
+<td>
+<select name="up1" onChange="changeUpSouma(1);copyUpAllFrom1st();">
+<option value="1">1</option>
+<option value="1.5">1.5</option>
+<option value="1.7">1.7</option>
+<option value="2">2</option>
+<option value="2.5">2.5</option>
+<option value="-1">ｿｳﾏR</option>
+</select><input type="text" value="0" name="upSouma1" style="display: none; width: 3em;" maxlength="3" pattern="^[0-9]+$">
+<input type="button" value="同下" name="copyUp1" onClick="copyUp(1, 2);" style="display:none">
+&nbsp;<a href="#upsoumar"><font size="2">※2</font></a>
+</td>
+</tr>
+
+<tr class="member1">
+<td>防御低下スキル</td>
+<td>
+<select name="down1">
+<option value="1">通常(減少無)</option>
+<option value="0.5">ダウン(半減)</option>
+<option value="0.25">大幅ダウン(3/4減)</option>
+<option value="0.9">10%ダウン</option>
+<option value="0.8">20%ダウン</option>
+<option value="0.7">30%ダウン</option>
+<option value="0.6">40%ダウン</option>
+</select>
+</td>
+</tr>
+
+<tr class="member1">
+<td>詳細設定</td>
+<td>
+<input type="button" value="開く" name="btnDetail1" onClick="clickDetail(1);">
+</td>
+</tr>
+
+<tr class="member1">
+<td colspan="2">
+
+<table border="0" id="member1Detail" style="display:none">
+
+<tr>
+<td>固定属性･割合</td>
+<td>
+<input type="text" name="addFixedPercent1" value="0" pattern="^[\+\-\%0-9]*$" maxlength="8" style="width: 8em;">
+&nbsp;<a href="#fixpercent"><font size="2">※3</font></a>
+</td>
+</tr>
+
+<tr>
+<td>追加ﾘｰﾀﾞｰ倍率</td>
+<td>
+<select name="addLeader1" onchange="linkAddLF('Leader', 1, 'Org');">
+<option value="1">無</option>
+<option value="1.05">1.05</option>
+<option value="1.1">1.1</option>
+<option value="1.15">1.15</option>
+<option value="1.2">1.2</option>
+<option value="1.25">1.25</option>
+<option value="1.3">1.3</option>
+<option value="1.35">1.35</option>
+<option value="1.4">1.4</option>
+<option value="1.5">1.5</option>
+</select>
+&nbsp;Lv.
+<select name="addLeaderLv1" onchange="linkAddLF('Leader', 1, 'Lv');">
+<option value="0">無</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<td>追加ﾌﾚﾝﾄﾞ倍率</td>
+<td>
+<select name="addFriend1" onchange="linkAddLF('Friend', 1, 'Org');">
+<option value="1">無</option>
+<option value="1.05">1.05</option>
+<option value="1.1">1.1</option>
+<option value="1.15">1.15</option>
+<option value="1.2">1.2</option>
+<option value="1.25">1.25</option>
+<option value="1.3">1.3</option>
+<option value="1.35">1.35</option>
+<option value="1.4">1.4</option>
+<option value="1.5">1.5</option>
+</select>
+&nbsp;Lv.
+<select name="addFriendLv1" onchange="linkAddLF('Friend', 1, 'Lv');">
+<option value="0">無</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<td>ｸﾘﾃｨｶﾙ(弱克)</td>
+<td>
+<input type="radio" name="critical1" value="1" id="crit_off1" checked="checked"><label for="crit_off1"><font size="-1">無</font></label>&nbsp;
+<input type="radio" name="critical1" value="2" id="crit_on1"><label for="crit_on1"><font size="-1">有</font></label>&nbsp;
+&nbsp;(<select name="weak1">
+<option value="1" selected="selected">無</option>
+<option value="1.2">1</option>
+<option value="1.4">2</option>
+<option value="1.6">3</option>
+<option value="1.8">4</option>
+<option value="2.0">5</option>
+</select>)
+</td>
+</tr>
+
+<tr>
+<td>追加chain数</td>
+<td>
+<input type="text" name="addChain1" value="0" pattern="^[\+\-0-9]*$" maxlength="3" style="width: 3em;">
+&nbsp;<a href="#addchaininfo"><font size="2">※4</font></a>
+</td>
+</tr>
+
+<tr>
+<td>ｱｰﾃｨﾌｧｸﾄ</td>
+<td>
+<select name="artifact1">
+<option value="0">無</option>
+<option value="200">+200</option>
+<option value="300">+300</option>
+</select>
+</td>
+</tr>
+
+<tr id="moveCannon1">
+<td>順番変更</td>
+<td>
+<!--<span id="moveCannonUp1"><input type="button" value="↑" onClick="moveCannonData(1, 1);">&nbsp;</span>-->
+<span id="moveCannonDown1"><input type="button" value="↓" onClick="moveCannonData(1, 2);"></span>
+</td>
+</tr>
+
+
+</table>
+
+</td>
+</tr>
+
+
+<tr class="member1">
+<td colspan="2"><hr /></td>
+</tr>
+
+
+<tr class="member2" style="display:none">
+<td colspan="2">
+<select name="cannon_prop2" onChange="filteringCannonData(2);setCannonData(2);">
+<option value="0">－</option>
+<option value="1">火</option>
+<option value="2">水</option>
+<option value="3">木</option>
+<option value="4">光</option>
+<option value="5">闇</option>
+</select>
+<select name="cannon2" id="selCannon2" onChange="setCannonData(2);">
+</select>
+</td>
+</tr>
+
+<tr class="member2" style="display:none">
+<td>攻撃力(アビ覚)</td><td>
+<input type="text" name="attack2" pattern="^[0-9]+$" maxlength="4" style="width: 4em;">(<span id="_ability2">無</span><select name="ability2" style="display:none" onChange="setAbilityData(2);">
+<option value="0" selected="selected">無</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+</select><input type="hidden" name="attack_org2">)
+<input type="button" value="同上" name="beforeCannon2" onClick="copyCannonData(1, 2);">
+</td>
+</tr>
+
+<tr class="member2" style="display:none" id="tr_limit2">
+<td>限界突破攻撃力</td><td>
+<input type="checkbox" name="limit2" value="" id="max_limit2" onclick="clickLimit(2);"><label for="max_limit2">最大(Lv.120)</label>
+</td>
+</tr>
+
+<tr class="member2" style="display:none">
+<td>属性相性</td>
+<td>
+<input type="radio" name="attr2" value="1" id="normal2" checked="checked"><label for="normal2"><font size="-1">普通</font></label>&nbsp;
+<input type="radio" name="attr2" value="2" id="advant2"><label for="advant2"><font size="-1">有利</font></label>&nbsp;
+<input type="radio" name="attr2" value="0.5" id="disadv2"><label for="disadv2"><font size="-1">不利</font></label>
+</td>
+</tr>
+
+<tr class="member2" style="display:none">
+<td>攻撃スキル倍率&nbsp;</td>
+<td>
+<select name="skill2">
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+<option value="9">9</option>
+<option value="10">10</option>
+<option value="-3">5 →50ﾁｪｲﾝで 7</option>
+<option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
+<option value="-2">ﾐｳ</option>
+<option value="-4">ｻﾕ･ﾊﾛｳｨﾝﾏﾐ</option>
+</select>
+</td>
+</tr>
+
+<tr class="member2" style="display:none">
+<td>倍率上昇スキル</td>
+<td>
+<select name="up2" onChange="changeUpSouma(2);">
+<option value="1">1</option>
+<option value="1.5">1.5</option>
+<option value="1.7">1.7</option>
+<option value="2">2</option>
+<option value="2.5">2.5</option>
+<option value="-1">ｿｳﾏR</option>
+</select><input type="text" value="0" name="upSouma2" style="display: none; width: 3em;" maxlength="3" pattern="^[0-9]+$">
+<input type="button" value="同上" name="copyUp2" onClick="copyUp(2, 1);">
+&nbsp;<a href="#upsoumar"><font size="2">※2</font></a>
+</td>
+</tr>
+
+<tr class="member2" style="display:none">
+<td>防御低下スキル</td>
+<td>
+<select name="down2">
+<option value="1">通常(減少無)</option>
+<option value="0.5">ダウン(半減)</option>
+<option value="0.25">大幅ダウン(3/4減)</option>
+<option value="0.9">10%ダウン</option>
+<option value="0.8">20%ダウン</option>
+<option value="0.7">30%ダウン</option>
+<option value="0.6">40%ダウン</option>
+</select>
+</td>
+</tr>
+
+<tr class="member2" style="display:none">
+<td>詳細設定</td>
+<td>
+<input type="button" value="開く" name="btnDetail2" onClick="clickDetail(2);">
+</td>
+</tr>
+
+<tr class="member2" style="display:none">
+<td colspan="2">
+
+<table border="0" id="member2Detail" style="display:none">
+
+<tr>
+<td>固定属性･割合</td>
+<td>
+<input type="text" name="addFixedPercent2" value="0" pattern="^[\+\-\%0-9]*$" maxlength="8" style="width: 8em;">
+&nbsp;<a href="#fixpercent"><font size="2">※3</font></a>
+</td>
+</tr>
+
+<tr>
+<td>追加ﾘｰﾀﾞｰ倍率</td>
+<td>
+<select name="addLeader2" onchange="linkAddLF('Leader', 2, 'Org');">
+<option value="1">無</option>
+<option value="1.05">1.05</option>
+<option value="1.1">1.1</option>
+<option value="1.15">1.15</option>
+<option value="1.2">1.2</option>
+<option value="1.25">1.25</option>
+<option value="1.3">1.3</option>
+<option value="1.35">1.35</option>
+<option value="1.4">1.4</option>
+<option value="1.5">1.5</option>
+</select>
+&nbsp;Lv.
+<select name="addLeaderLv2" onchange="linkAddLF('Leader', 2, 'Lv');">
+<option value="0">無</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<td>追加ﾌﾚﾝﾄﾞ倍率</td>
+<td>
+<select name="addFriend2" onchange="linkAddLF('Friend', 2, 'Org');">
+<option value="1">無</option>
+<option value="1.05">1.05</option>
+<option value="1.1">1.1</option>
+<option value="1.15">1.15</option>
+<option value="1.2">1.2</option>
+<option value="1.25">1.25</option>
+<option value="1.3">1.3</option>
+<option value="1.35">1.35</option>
+<option value="1.4">1.4</option>
+<option value="1.5">1.5</option>
+</select>
+&nbsp;Lv.
+<select name="addFriendLv2" onchange="linkAddLF('Friend', 2, 'Lv');">
+<option value="0">無</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<td>ｸﾘﾃｨｶﾙ(弱克)</td>
+<td>
+<input type="radio" name="critical2" value="1" id="crit_off2" checked="checked"><label for="crit_off2"><font size="-1">無</font></label>&nbsp;
+<input type="radio" name="critical2" value="2" id="crit_on2"><label for="crit_on2"><font size="-1">有</font></label>&nbsp;
+&nbsp;(<select name="weak2">
+<option value="1" selected="selected">無</option>
+<option value="1.2">1</option>
+<option value="1.4">2</option>
+<option value="1.6">3</option>
+<option value="1.8">4</option>
+<option value="2.0">5</option>
+</select>)
+</td>
+</tr>
+
+<tr>
+<td>追加chain数</td>
+<td>
+<input type="text" name="addChain2" value="0" pattern="^[\+\-0-9]*$" maxlength="3" style="width: 3em;">
+&nbsp;<a href="#addchaininfo"><font size="2">※4</font></a>
+</td>
+</tr>
+
+<tr>
+<td>ｱｰﾃｨﾌｧｸﾄ</td>
+<td>
+<select name="artifact2">
+<option value="0">無</option>
+<option value="200">+200</option>
+<option value="300">+300</option>
+</select>
+</td>
+</tr>
+
+<tr id="moveCannon2">
+<td>順番変更</td>
+<td>
+<span id="moveCannonUp2"><input type="button" value="↑" onClick="moveCannonData(2, 1);">&nbsp;</span>
+<span id="moveCannonDown2"><input type="button" value="↓" onClick="moveCannonData(2, 3);"></span>
+</td>
+</tr>
+
+
+</table>
+
+</td>
+</tr>
+
+
+<tr class="member2" style="display:none">
+<td colspan="2"><hr /></td>
+</tr>
+
+
+<tr class="member3" style="display:none">
+<td colspan="2">
+<select name="cannon_prop3" onChange="filteringCannonData(3);setCannonData(3);">
+<option value="0">－</option>
+<option value="1">火</option>
+<option value="2">水</option>
+<option value="3">木</option>
+<option value="4">光</option>
+<option value="5">闇</option>
+</select>
+<select name="cannon3" id="selCannon3" onChange="setCannonData(3);">
+</select>
+</td>
+</tr>
+
+<tr class="member3" style="display:none">
+<td>攻撃力(アビ覚)</td><td>
+<input type="text" name="attack3" pattern="^[0-9]+$" maxlength="4" style="width: 4em;">(<span id="_ability3">無</span><select name="ability3" style="display:none" onChange="setAbilityData(3);">
+<option value="0" selected="selected">無</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+</select><input type="hidden" name="attack_org3">)
+<input type="button" value="同上" name="beforeCannon2" onClick="copyCannonData(2, 3);">
+</td>
+</tr>
+
+<tr class="member3" style="display:none" id="tr_limit3">
+<td>限界突破攻撃力</td><td>
+<input type="checkbox" name="limit3" value="" id="max_limit3" onclick="clickLimit(3);"><label for="max_limit3">最大(Lv.120)</label>
+</td>
+</tr>
+
+<tr class="member3" style="display:none">
+<td>属性相性</td>
+<td>
+<input type="radio" name="attr3" value="1" id="normal3" checked="checked"><label for="normal3"><font size="-1">普通</font></label>&nbsp;
+<input type="radio" name="attr3" value="2" id="advant3"><label for="advant3"><font size="-1">有利</font></label>&nbsp;
+<input type="radio" name="attr3" value="0.5" id="disadv3"><label for="disadv3"><font size="-1">不利</font></label>
+</td>
+</tr>
+
+<tr class="member3" style="display:none">
+<td>攻撃スキル倍率&nbsp;</td>
+<td>
+<select name="skill3">
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+<option value="9">9</option>
+<option value="10">10</option>
+<option value="-3">5 →50ﾁｪｲﾝで 7</option>
+<option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
+<option value="-2">ﾐｳ</option>
+<option value="-4">ｻﾕ･ﾊﾛｳｨﾝﾏﾐ</option>
+</select>
+</td>
+</tr>
+
+<tr class="member3" style="display:none">
+<td>倍率上昇スキル</td>
+<td>
+<select name="up3" onChange="changeUpSouma(3);">
+<option value="1">1</option>
+<option value="1.5">1.5</option>
+<option value="1.7">1.7</option>
+<option value="2">2</option>
+<option value="2.5">2.5</option>
+<option value="-1">ｿｳﾏR</option>
+</select><input type="text" value="0" name="upSouma3" style="display: none; width: 3em;" maxlength="3" pattern="^[0-9]+$">
+<input type="button" value="同上" name="copyUp3" onClick="copyUp(3, 2);">
+&nbsp;<a href="#upsoumar"><font size="2">※2</font></a>
+</td>
+</tr>
+
+<tr class="member3" style="display:none">
+<td>防御低下スキル</td>
+<td>
+<select name="down3">
+<option value="1">通常(減少無)</option>
+<option value="0.5">ダウン(半減)</option>
+<option value="0.25">大幅ダウン(3/4減)</option>
+<option value="0.9">10%ダウン</option>
+<option value="0.8">20%ダウン</option>
+<option value="0.7">30%ダウン</option>
+<option value="0.6">40%ダウン</option>
+</select>
+</td>
+</tr>
+
+<tr class="member3" style="display:none">
+<td>詳細設定</td>
+<td>
+<input type="button" value="開く" name="btnDetail3" onClick="clickDetail(3);">
+</td>
+</tr>
+
+<tr class="member3" style="display:none">
+<td colspan="2">
+
+<table border="0" id="member3Detail" style="display:none">
+
+<tr>
+<td>固定属性･割合</td>
+<td>
+<input type="text" name="addFixedPercent3" value="0" pattern="^[\+\-\%0-9]*$" maxlength="8" style="width: 8em;">
+&nbsp;<a href="#fixpercent"><font size="2">※3</font></a>
+</td>
+</tr>
+
+<tr>
+<td>追加ﾘｰﾀﾞｰ倍率</td>
+<td>
+<select name="addLeader3" onchange="linkAddLF('Leader', 3, 'Org');">
+<option value="1">無</option>
+<option value="1.05">1.05</option>
+<option value="1.1">1.1</option>
+<option value="1.15">1.15</option>
+<option value="1.2">1.2</option>
+<option value="1.25">1.25</option>
+<option value="1.3">1.3</option>
+<option value="1.35">1.35</option>
+<option value="1.4">1.4</option>
+<option value="1.5">1.5</option>
+</select>
+&nbsp;Lv.
+<select name="addLeaderLv3" onchange="linkAddLF('Leader', 3, 'Lv');">
+<option value="0">無</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<td>追加ﾌﾚﾝﾄﾞ倍率</td>
+<td>
+<select name="addFriend3" onchange="linkAddLF('Friend', 3, 'Org');">
+<option value="1">無</option>
+<option value="1.05">1.05</option>
+<option value="1.1">1.1</option>
+<option value="1.15">1.15</option>
+<option value="1.2">1.2</option>
+<option value="1.25">1.25</option>
+<option value="1.3">1.3</option>
+<option value="1.35">1.35</option>
+<option value="1.4">1.4</option>
+<option value="1.5">1.5</option>
+</select>
+&nbsp;Lv.
+<select name="addFriendLv3" onchange="linkAddLF('Friend', 3, 'Lv');">
+<option value="0">無</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<td>ｸﾘﾃｨｶﾙ(弱克)</td>
+<td>
+<input type="radio" name="critical3" value="1" id="crit_off3" checked="checked"><label for="crit_off3"><font size="-1">無</font></label>&nbsp;
+<input type="radio" name="critical3" value="2" id="crit_on3"><label for="crit_on3"><font size="-1">有</font></label>&nbsp;
+&nbsp;(<select name="weak3">
+<option value="1" selected="selected">無</option>
+<option value="1.2">1</option>
+<option value="1.4">2</option>
+<option value="1.6">3</option>
+<option value="1.8">4</option>
+<option value="2.0">5</option>
+</select>)
+</td>
+</tr>
+
+<tr>
+<td>追加chain数</td>
+<td>
+<input type="text" name="addChain3" value="0" pattern="^[\+\-0-9]*$" maxlength="3" style="width: 3em;">
+&nbsp;<a href="#addchaininfo"><font size="2">※4</font></a>
+</td>
+</tr>
+
+<tr>
+<td>ｱｰﾃｨﾌｧｸﾄ</td>
+<td>
+<select name="artifact3">
+<option value="0">無</option>
+<option value="200">+200</option>
+<option value="300">+300</option>
+</select>
+</td>
+</tr>
+
+<tr id="moveCannon3">
+<td>順番変更</td>
+<td>
+<span id="moveCannonUp3"><input type="button" value="↑" onClick="moveCannonData(3, 2);">&nbsp;</span>
+<span id="moveCannonDown3"><input type="button" value="↓" onClick="moveCannonData(3, 4);"></span>
+</td>
+</tr>
+
+
+</table>
+
+</td>
+</tr>
+
+
+<tr class="member3" style="display:none">
+<td colspan="2"><hr /></td>
+</tr>
+
+
+<tr class="member4" style="display:none">
+<td colspan="2">
+<select name="cannon_prop4" onChange="filteringCannonData(4);setCannonData(4);">
+<option value="0">－</option>
+<option value="1">火</option>
+<option value="2">水</option>
+<option value="3">木</option>
+<option value="4">光</option>
+<option value="5">闇</option>
+</select>
+<select name="cannon4" id="selCannon4" onChange="setCannonData(4);">
+</select>
+</td>
+</tr>
+
+<tr class="member4" style="display:none">
+<td>攻撃力(アビ覚)</td><td>
+<input type="text" name="attack4" pattern="^[0-9]+$" maxlength="4" style="width: 4em;">(<span id="_ability4">無</span><select name="ability4" style="display:none" onChange="setAbilityData(4);">
+<option value="0" selected="selected">無</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+</select><input type="hidden" name="attack_org4">)
+<input type="button" value="同上" name="beforeCannon2" onClick="copyCannonData(3, 4);">
+</td>
+</tr>
+
+<tr class="member4" style="display:none" id="tr_limit4">
+<td>限界突破攻撃力</td><td>
+<input type="checkbox" name="limit4" value="" id="max_limit4" onclick="clickLimit(4);"><label for="max_limit4">最大(Lv.120)</label>
+</td>
+</tr>
+
+<tr class="member4" style="display:none">
+<td>属性相性</td>
+<td>
+<input type="radio" name="attr4" value="1" id="normal4" checked="checked"><label for="normal4"><font size="-1">普通</font></label>&nbsp;
+<input type="radio" name="attr4" value="2" id="advant4"><label for="advant4"><font size="-1">有利</font></label>&nbsp;
+<input type="radio" name="attr4" value="0.5" id="disadv4"><label for="disadv4"><font size="-1">不利</font></label>
+</td>
+</tr>
+
+<tr class="member4" style="display:none">
+<td>攻撃スキル倍率&nbsp;</td>
+<td>
+<select name="skill4">
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+<option value="9">9</option>
+<option value="10">10</option>
+<option value="-3">5 →50ﾁｪｲﾝで 7</option>
+<option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
+<option value="-2">ﾐｳ</option>
+<option value="-4">ｻﾕ･ﾊﾛｳｨﾝﾏﾐ</option>
+</select>
+</td>
+</tr>
+
+<tr class="member4" style="display:none">
+<td>倍率上昇スキル</td>
+<td>
+<select name="up4" onChange="changeUpSouma(4);">
+<option value="1">1</option>
+<option value="1.5">1.5</option>
+<option value="1.7">1.7</option>
+<option value="2">2</option>
+<option value="2.5">2.5</option>
+<option value="-1">ｿｳﾏR</option>
+</select><input type="text" value="0" name="upSouma4" style="display: none; width: 3em;" maxlength="3" pattern="^[0-9]+$">
+<input type="button" value="同上" name="copyUp4" onClick="copyUp(4, 3);">
+&nbsp;<a href="#upsoumar"><font size="2">※2</font></a>
+</td>
+</tr>
+
+<tr class="member4" style="display:none">
+<td>防御低下スキル</td>
+<td>
+<select name="down4">
+<option value="1">通常(減少無)</option>
+<option value="0.5">ダウン(半減)</option>
+<option value="0.25">大幅ダウン(3/4減)</option>
+<option value="0.9">10%ダウン</option>
+<option value="0.8">20%ダウン</option>
+<option value="0.7">30%ダウン</option>
+<option value="0.6">40%ダウン</option>
+</select>
+</td>
+</tr>
+
+<tr class="member4" style="display:none">
+<td>詳細設定</td>
+<td>
+<input type="button" value="開く" name="btnDetail4" onClick="clickDetail(4);">
+</td>
+</tr>
+
+<tr class="member4" style="display:none">
+<td colspan="2">
+
+<table border="0" id="member4Detail" style="display:none">
+
+<tr>
+<td>固定属性･割合</td>
+<td>
+<input type="text" name="addFixedPercent4" value="0" pattern="^[\+\-\%0-9]*$" maxlength="8" style="width: 8em;">
+&nbsp;<a href="#fixpercent"><font size="2">※3</font></a>
+</td>
+</tr>
+
+<tr>
+<td>追加ﾘｰﾀﾞｰ倍率</td>
+<td>
+<select name="addLeader4" onchange="linkAddLF('Leader', 4, 'Org');">
+<option value="1">無</option>
+<option value="1.05">1.05</option>
+<option value="1.1">1.1</option>
+<option value="1.15">1.15</option>
+<option value="1.2">1.2</option>
+<option value="1.25">1.25</option>
+<option value="1.3">1.3</option>
+<option value="1.35">1.35</option>
+<option value="1.4">1.4</option>
+<option value="1.5">1.5</option>
+</select>
+&nbsp;Lv.
+<select name="addLeaderLv4" onchange="linkAddLF('Leader', 4, 'Lv');">
+<option value="0">無</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<td>追加ﾌﾚﾝﾄﾞ倍率</td>
+<td>
+<select name="addFriend4" onchange="linkAddLF('Friend', 4, 'Org');">
+<option value="1">無</option>
+<option value="1.05">1.05</option>
+<option value="1.1">1.1</option>
+<option value="1.15">1.15</option>
+<option value="1.2">1.2</option>
+<option value="1.25">1.25</option>
+<option value="1.3">1.3</option>
+<option value="1.35">1.35</option>
+<option value="1.4">1.4</option>
+<option value="1.5">1.5</option>
+</select>
+&nbsp;Lv.
+<select name="addFriendLv4" onchange="linkAddLF('Friend', 4, 'Lv');">
+<option value="0">無</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<td>ｸﾘﾃｨｶﾙ(弱克)</td>
+<td>
+<input type="radio" name="critical4" value="1" id="crit_off4" checked="checked"><label for="crit_off4"><font size="-1">無</font></label>&nbsp;
+<input type="radio" name="critical4" value="2" id="crit_on4"><label for="crit_on4"><font size="-1">有</font></label>&nbsp;
+&nbsp;(<select name="weak4">
+<option value="1" selected="selected">無</option>
+<option value="1.2">1</option>
+<option value="1.4">2</option>
+<option value="1.6">3</option>
+<option value="1.8">4</option>
+<option value="2.0">5</option>
+</select>)
+</td>
+</tr>
+
+<tr>
+<td>追加chain数</td>
+<td>
+<input type="text" name="addChain4" value="0" pattern="^[\+\-0-9]*$" maxlength="3" style="width: 3em;">
+&nbsp;<a href="#addchaininfo"><font size="2">※4</font></a>
+</td>
+</tr>
+
+<tr>
+<td>ｱｰﾃｨﾌｧｸﾄ</td>
+<td>
+<select name="artifact4">
+<option value="0">無</option>
+<option value="200">+200</option>
+<option value="300">+300</option>
+</select>
+</td>
+</tr>
+
+<tr id="moveCannon4">
+<td>順番変更</td>
+<td>
+<span id="moveCannonUp4"><input type="button" value="↑" onClick="moveCannonData(4, 3);">&nbsp;</span>
+<span id="moveCannonDown4"><input type="button" value="↓" onClick="moveCannonData(4, 5);"></span>
+</td>
+</tr>
+
+
+</table>
+
+</td>
+</tr>
+
+
+<tr class="member4" style="display:none">
+<td colspan="2"><hr /></td>
+</tr>
+
+
+<tr class="member5" style="display:none">
+<td colspan="2">
+<select name="cannon_prop5" onChange="filteringCannonData(5);setCannonData(5);">
+<option value="0">－</option>
+<option value="1">火</option>
+<option value="2">水</option>
+<option value="3">木</option>
+<option value="4">光</option>
+<option value="5">闇</option>
+</select>
+<select name="cannon5" id="selCannon5" onChange="setCannonData(5);">
+</select>
+</td>
+</tr>
+
+<tr class="member5" style="display:none">
+<td>攻撃力(アビ覚)</td><td>
+<input type="text" name="attack5" pattern="^[0-9]+$" maxlength="4" style="width: 4em;">(<span id="_ability5">無</span><select name="ability5" style="display:none" onChange="setAbilityData(5);">
+<option value="0" selected="selected">無</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+</select><input type="hidden" name="attack_org5">)
+<input type="button" value="同上" name="beforeCannon2" onClick="copyCannonData(4, 5);">
+</td>
+</tr>
+
+<tr class="member5" style="display:none" id="tr_limit5">
+<td>限界突破攻撃力</td><td>
+<input type="checkbox" name="limit5" value="" id="max_limit5" onclick="clickLimit(5);"><label for="max_limit5">最大(Lv.120)</label>
+</td>
+</tr>
+
+<tr class="member5" style="display:none">
+<td>属性相性</td>
+<td>
+<input type="radio" name="attr5" value="1" id="normal5" checked="checked"><label for="normal5"><font size="-1">普通</font></label>&nbsp;
+<input type="radio" name="attr5" value="2" id="advant5"><label for="advant5"><font size="-1">有利</font></label>&nbsp;
+<input type="radio" name="attr5" value="0.5" id="disadv5"><label for="disadv5"><font size="-1">不利</font></label>
+</td>
+</tr>
+
+<tr class="member5" style="display:none">
+<td>攻撃スキル倍率&nbsp;</td>
+<td>
+<select name="skill5">
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+<option value="9">9</option>
+<option value="10">10</option>
+<option value="-3">5 →50ﾁｪｲﾝで 7</option>
+<option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
+<option value="-2">ﾐｳ</option>
+<option value="-4">ｻﾕ･ﾊﾛｳｨﾝﾏﾐ</option>
+</select>
+</td>
+</tr>
+
+<tr class="member5" style="display:none">
+<td>倍率上昇スキル</td>
+<td>
+<select name="up5" onChange="changeUpSouma(5);">
+<option value="1">1</option>
+<option value="1.5">1.5</option>
+<option value="1.7">1.7</option>
+<option value="2">2</option>
+<option value="2.5">2.5</option>
+<option value="-1">ｿｳﾏR</option>
+</select><input type="text" value="0" name="upSouma5" style="display: none; width: 3em;" maxlength="3" pattern="^[0-9]+$">
+<input type="button" value="同上" name="copyUp5" onClick="copyUp(5, 4);">
+&nbsp;<a href="#upsoumar"><font size="2">※2</font></a>
+</td>
+</tr>
+
+<tr class="member5" style="display:none">
+<td>防御低下スキル</td>
+<td>
+<select name="down5">
+<option value="1">通常(減少無)</option>
+<option value="0.5">ダウン(半減)</option>
+<option value="0.25">大幅ダウン(3/4減)</option>
+<option value="0.9">10%ダウン</option>
+<option value="0.8">20%ダウン</option>
+<option value="0.7">30%ダウン</option>
+<option value="0.6">40%ダウン</option>
+</select>
+</td>
+</tr>
+
+<tr class="member5" style="display:none">
+<td>詳細設定</td>
+<td>
+<input type="button" value="開く" name="btnDetail5" onClick="clickDetail(5);">
+</td>
+</tr>
+
+<tr class="member5" style="display:none">
+<td colspan="2">
+
+<table border="0" id="member5Detail" style="display:none">
+
+<tr>
+<td>固定属性･割合</td>
+<td>
+<input type="text" name="addFixedPercent5" value="0" pattern="^[\+\-\%0-9]*$" maxlength="8" style="width: 8em;">
+&nbsp;<a href="#fixpercent"><font size="2">※3</font></a>
+</td>
+</tr>
+
+<tr>
+<td>追加ﾘｰﾀﾞｰ倍率</td>
+<td>
+<select name="addLeader5" onchange="linkAddLF('Leader', 5, 'Org');">
+<option value="1">無</option>
+<option value="1.05">1.05</option>
+<option value="1.1">1.1</option>
+<option value="1.15">1.15</option>
+<option value="1.2">1.2</option>
+<option value="1.25">1.25</option>
+<option value="1.3">1.3</option>
+<option value="1.35">1.35</option>
+<option value="1.4">1.4</option>
+<option value="1.5">1.5</option>
+</select>
+&nbsp;Lv.
+<select name="addLeaderLv5" onchange="linkAddLF('Leader', 5, 'Lv');">
+<option value="0">無</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<td>追加ﾌﾚﾝﾄﾞ倍率</td>
+<td>
+<select name="addFriend5" onchange="linkAddLF('Friend', 5, 'Org');">
+<option value="1">無</option>
+<option value="1.05">1.05</option>
+<option value="1.1">1.1</option>
+<option value="1.15">1.15</option>
+<option value="1.2">1.2</option>
+<option value="1.25">1.25</option>
+<option value="1.3">1.3</option>
+<option value="1.35">1.35</option>
+<option value="1.4">1.4</option>
+<option value="1.5">1.5</option>
+</select>
+&nbsp;Lv.
+<select name="addFriendLv5" onchange="linkAddLF('Friend', 5, 'Lv');">
+<option value="0">無</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<td>ｸﾘﾃｨｶﾙ(弱克)</td>
+<td>
+<input type="radio" name="critical5" value="1" id="crit_off5" checked="checked"><label for="crit_off5"><font size="-1">無</font></label>&nbsp;
+<input type="radio" name="critical5" value="2" id="crit_on5"><label for="crit_on5"><font size="-1">有</font></label>&nbsp;
+&nbsp;(<select name="weak5">
+<option value="1" selected="selected">無</option>
+<option value="1.2">1</option>
+<option value="1.4">2</option>
+<option value="1.6">3</option>
+<option value="1.8">4</option>
+<option value="2.0">5</option>
+</select>)
+</td>
+</tr>
+
+<tr>
+<td>追加chain数</td>
+<td>
+<input type="text" name="addChain5" value="0" pattern="^[\+\-0-9]*$" maxlength="3" style="width: 3em;">
+&nbsp;<a href="#addchaininfo"><font size="2">※4</font></a>
+</td>
+</tr>
+
+<tr>
+<td>ｱｰﾃｨﾌｧｸﾄ</td>
+<td>
+<select name="artifact5">
+<option value="0">無</option>
+<option value="200">+200</option>
+<option value="300">+300</option>
+</select>
+</td>
+</tr>
+
+<tr id="moveCannon5">
+<td>順番変更</td>
+<td>
+<span id="moveCannonUp5"><input type="button" value="↑" onClick="moveCannonData(5, 4);">&nbsp;</span>
+<span id="moveCannonDown5"><input type="button" value="↓" onClick="moveCannonData(5, 6);"></span>
+</td>
+</tr>
+
+
+</table>
+
+</td>
+</tr>
+
+
+<tr class="member5" style="display:none">
+<td colspan="2"><hr /></td>
+</tr>
+
+
+<tr class="member6" style="display:none">
+<td colspan="2">
+<select name="cannon_prop6" onChange="filteringCannonData(6);setCannonData(6);">
+<option value="0">－</option>
+<option value="1">火</option>
+<option value="2">水</option>
+<option value="3">木</option>
+<option value="4">光</option>
+<option value="5">闇</option>
+</select>
+<select name="cannon6" id="selCannon6" onChange="setCannonData(6);">
+</select>
+</td>
+</tr>
+
+<tr class="member6" style="display:none">
+<td>攻撃力(アビ覚)</td><td>
+<input type="text" name="attack6" pattern="^[0-9]+$" maxlength="4" style="width: 4em;">(<span id="_ability6">無</span><select name="ability6" style="display:none" onChange="setAbilityData(6);">
+<option value="0" selected="selected">無</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+</select><input type="hidden" name="attack_org6">)
+<input type="button" value="同上" name="beforeCannon2" onClick="copyCannonData(5, 6);">
+</td>
+</tr>
+
+<tr class="member6" style="display:none" id="tr_limit6">
+<td>限界突破攻撃力</td><td>
+<input type="checkbox" name="limit6" value="" id="max_limit6" onclick="clickLimit(6);"><label for="max_limit6">最大(Lv.120)</label>
+</td>
+</tr>
+
+<tr class="member6" style="display:none">
+<td>属性相性</td>
+<td>
+<input type="radio" name="attr6" value="1" id="normal6" checked="checked"><label for="normal6"><font size="-1">普通</font></label>&nbsp;
+<input type="radio" name="attr6" value="2" id="advant6"><label for="advant6"><font size="-1">有利</font></label>&nbsp;
+<input type="radio" name="attr6" value="0.5" id="disadv6"><label for="disadv6"><font size="-1">不利</font></label>
+</td>
+</tr>
+
+<tr class="member6" style="display:none">
+<td>攻撃スキル倍率&nbsp;</td>
+<td>
+<select name="skill6">
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+<option value="9">9</option>
+<option value="10">10</option>
+<option value="-3">5 →50ﾁｪｲﾝで 7</option>
+<option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
+<option value="-2">ﾐｳ</option>
+<option value="-4">ｻﾕ･ﾊﾛｳｨﾝﾏﾐ</option>
+</select>
+</td>
+</tr>
+
+<tr class="member6" style="display:none">
+<td>倍率上昇スキル</td>
+<td>
+<select name="up6" onChange="changeUpSouma(6);">
+<option value="1">1</option>
+<option value="1.5">1.5</option>
+<option value="1.7">1.7</option>
+<option value="2">2</option>
+<option value="2.5">2.5</option>
+<option value="-1">ｿｳﾏR</option>
+</select><input type="text" value="0" name="upSouma6" style="display: none; width: 3em;" maxlength="3" pattern="^[0-9]+$">
+<input type="button" value="同上" name="copyUp6" onClick="copyUp(6, 5);">
+&nbsp;<a href="#upsoumar"><font size="2">※2</font></a>
+</td>
+</tr>
+
+<tr class="member6" style="display:none">
+<td>防御低下スキル</td>
+<td>
+<select name="down6">
+<option value="1">通常(減少無)</option>
+<option value="0.5">ダウン(半減)</option>
+<option value="0.25">大幅ダウン(3/4減)</option>
+<option value="0.9">10%ダウン</option>
+<option value="0.8">20%ダウン</option>
+<option value="0.7">30%ダウン</option>
+<option value="0.6">40%ダウン</option>
+</select>
+</td>
+</tr>
+
+<tr class="member6" style="display:none">
+<td>詳細設定</td>
+<td>
+<input type="button" value="開く" name="btnDetail6" onClick="clickDetail(6);">
+</td>
+</tr>
+
+<tr class="member6" style="display:none">
+<td colspan="2">
+
+<table border="0" id="member6Detail" style="display:none">
+
+<tr>
+<td>固定属性･割合</td>
+<td>
+<input type="text" name="addFixedPercent6" value="0" pattern="^[\+\-\%0-9]*$" maxlength="8" style="width: 8em;">
+&nbsp;<a href="#fixpercent"><font size="2">※3</font></a>
+</td>
+</tr>
+
+<tr>
+<td>追加ﾘｰﾀﾞｰ倍率</td>
+<td>
+<select name="addLeader6" onchange="linkAddLF('Leader', 6, 'Org');">
+<option value="1">無</option>
+<option value="1.05">1.05</option>
+<option value="1.1">1.1</option>
+<option value="1.15">1.15</option>
+<option value="1.2">1.2</option>
+<option value="1.25">1.25</option>
+<option value="1.3">1.3</option>
+<option value="1.35">1.35</option>
+<option value="1.4">1.4</option>
+<option value="1.5">1.5</option>
+</select>
+&nbsp;Lv.
+<select name="addLeaderLv6" onchange="linkAddLF('Leader', 6, 'Lv');">
+<option value="0">無</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<td>追加ﾌﾚﾝﾄﾞ倍率</td>
+<td>
+<select name="addFriend6" onchange="linkAddLF('Friend', 6, 'Org');">
+<option value="1">無</option>
+<option value="1.05">1.05</option>
+<option value="1.1">1.1</option>
+<option value="1.15">1.15</option>
+<option value="1.2">1.2</option>
+<option value="1.25">1.25</option>
+<option value="1.3">1.3</option>
+<option value="1.35">1.35</option>
+<option value="1.4">1.4</option>
+<option value="1.5">1.5</option>
+</select>
+&nbsp;Lv.
+<select name="addFriendLv6" onchange="linkAddLF('Friend', 6, 'Lv');">
+<option value="0">無</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<td>ｸﾘﾃｨｶﾙ(弱克)</td>
+<td>
+<input type="radio" name="critical6" value="1" id="crit_off6" checked="checked"><label for="crit_off6"><font size="-1">無</font></label>&nbsp;
+<input type="radio" name="critical6" value="2" id="crit_on6"><label for="crit_on6"><font size="-1">有</font></label>&nbsp;
+&nbsp;(<select name="weak6">
+<option value="1" selected="selected">無</option>
+<option value="1.2">1</option>
+<option value="1.4">2</option>
+<option value="1.6">3</option>
+<option value="1.8">4</option>
+<option value="2.0">5</option>
+</select>)
+</td>
+</tr>
+
+<tr>
+<td>追加chain数</td>
+<td>
+<input type="text" name="addChain6" value="0" pattern="^[\+\-0-9]*$" maxlength="3" style="width: 3em;">
+&nbsp;<a href="#addchaininfo"><font size="2">※4</font></a>
+</td>
+</tr>
+
+<tr>
+<td>ｱｰﾃｨﾌｧｸﾄ</td>
+<td>
+<select name="artifact6">
+<option value="0">無</option>
+<option value="200">+200</option>
+<option value="300">+300</option>
+</select>
+</td>
+</tr>
+
+<tr id="moveCannon6">
+<td>順番変更</td>
+<td>
+<span id="moveCannonUp6"><input type="button" value="↑" onClick="moveCannonData(6, 5);">&nbsp;</span>
+<span id="moveCannonDown6"><input type="button" value="↓" onClick="moveCannonData(6, 6);"></span>
+</td>
+</tr>
+
+
+</table>
+
+</td>
+</tr>
+
+
+<tr class="member6" style="display:none">
+<td colspan="2"><hr /></td>
+</tr>
+
+
+<tr class="add_member">
+<td colspan="2"><input type="button" value="攻撃タマシイ追加" onClick="addMemberNumber();"></td>
+</tr>
+<tr class="add_member">
+<td colspan="2"><hr /></td>
+</tr>
+
+
+<tr>
+<td>chain数</td>
+<td>
+<input type="text" name="chain" value="0" pattern="^[0-9]*$" maxlength="3" style="width: 3em;">
+&nbsp;
+<input type="checkbox" name="kaguya" id="leaderKaguya"><label for="leaderKaguya">Lｶｸﾞﾔ</label>
+</td>
+</tr>
+
+<tr>
+<td>敵防御力(属性)</td>
+<td>
+<input type="text" name="guard" size="8" value="0" pattern="^[0-9]*$">(<select name="prop" id="selProp" onChange="setAttr();">
+<option value="0">－</option>
+<option value="1">火</option>
+<option value="2">水</option>
+<option value="3">木</option>
+<option value="4">光</option>
+<option value="5">闇</option>
+</select>)
+</td>
+</tr>
+
+<tr>
+<td>与ダメージ</td><td><input type="text" name="result" size="16" value="0" pattern="^[0-9]*$"></td>
+</tr>
+
+<tr>
+<td colspan="2"><hr /></td>
+</tr>
+
+<tr>
+<td><input type="button" value="　ダメージ計算　" onClick="calcDamage();"></td>
+<td><input type="button" value="　チェイン数逆算　" onClick="calcChains();">&nbsp;<a href="#calcchain"><font size="2">※5</font></a></td>
+</tr>
+
+<tr>
+<td colspan="2"></td>
+</tr>
+
+<tr>
+<td id="guard"><input type="button" value="敵防御力逆算" onClick="calcGuard();"></td>
+<td><input type="button" value="　入力初期化　" onClick="location.href='damage.html';"></td>
+</tr>
+
+
+</table>
+</form>
+
+<hr />
+<a href="./filter_setting.html">フィルタ設定</a>&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="radio" name="filter" id="filter_valied" checked="checked" onClick="setFilter();"><label for="filter_valied">有効</label>&nbsp;
+<input type="radio" name="filter" id="filter_invalied" onClick="setFilter();"><label for="filter_invalied">無効</label>&nbsp;
+&nbsp;<a href="#fltinfo"><font size="2">※6</font></a><br />
+
+<script language="JavaScript" type="text/JavaScript">
+<!--
+
+	initLeaders();
+	initCannons();
+
+//-->
+</script>
+
+<hr />
+<a href="#top">ページ先頭へ</a>
+<hr />
+<a href="./">サイトTOPへ</a>
+<hr />
+・使用上の注意<br />
+<a id="cmbinfo">→combo機能について</a><br />
+「combo有」ボタンを押すことで、<br />
+combo機能を使用する事ができます。<br />
+左の入力欄には計算したいcombo数を、<br />
+右の()内の入力欄には<br />
+リーダーとフレンドの<br />
+攻撃力アップ率の合計を<br />
+入力してください。<br />
+※例…combo攻撃力アップ率が<br />
+　リーダー1%、フレンド0.5%で<br />
+　10combo時のダメージを計算する場合、<br />
+　左の入力欄に10、<br />
+　右の入力欄に1.5と入力。<br />
+各入力欄に数値が入力されていても、<br />
+「combo無」の状態では、<br />
+ダメージの計算に<br />
+combo機能は反映されません。<br />
+一時的にcombo有り/無しリーダーを<br />
+切り替えて計算する<br />
+場合にご利用ください。<br />
+<br />
+<a id="upsoumar">→倍率上昇スキルのｿｳﾏRについて</a><br />
+倍率上昇スキルにてｿｳﾏR<br />
+(＝ソウマ・レプリカント)<br />
+を選択すると、右にスキル発動時の<br />
+チェイン数を入力する欄が表示されます。<br />
+0から100までの数値を入力してください。<br />
+<br />
+<a id="fixpercent">→詳細設定＞固定属性･割合について</a><br />
+ノストラダムスの様な<br />
+固定属性ダメージや、<br />
+タイヨウの様な<br />
+割合ダメージを入力します。<br />
+数値のみの入力だと<br />
+固定属性ダメージ、<br />
+末尾が「%」だと<br />
+割合ダメージとなります。<br />
+※例…タイヨウの場合、「35%」と入力。<br />
+この欄に数値が入力された場合、<br />
+攻撃力等の入力は無視されます。<br />
+(攻撃力が未入力でも構いません)<br />
+割合ダメージは<br />
+チェイン数逆算のみ対応で、<br />
+ダメージ計算や敵防御力逆算には<br />
+使用できません(警告を発します)。<br />
+また、この欄が「0」の場合、<br />
+通常の攻撃力を使用した計算となります。<br />
+<br />
+<a id="addchaininfo">→詳細設定＞追加chain数について</a><br />
+攻撃と同時にchain数が変動する場合、<br />
+その変動値を入力してください。<br />
+マイナス値にも対応しています。<br />
+<br />
+<a id="calcchain">→チェイン数逆算機能について</a><br />
+結果が999の場合、<br />
+100チェインでも設定与ダメージ値を<br />
+超えられない事を意味します。<br />
+<br />
+<a id="fltinfo">→フィルタ設定について</a><br />
+リーダー&amp;フレンド倍率と<br />
+攻撃スキル倍率について、<br />
+表示のon/offの設定を行う事が出来ます。<br />
+また、設定内容はCookieに保存され、<br />
+次回アクセス以降は自動的に<br />
+設定が反映された状態となります。<br />
+Cookieの保存期間は60日間です。<br />
+<hr />
+<a href="#top">ページ先頭へ</a>
+<hr />
+<a href="./">サイトTOPへ</a>
+<hr />
+・更新履歴<br />
+2016/10/09<br />
+　割合ダメージスキル持ちタマシイも砲台に追加する様に修正<br />
+2016/10/07<br />
+　攻撃スキル倍率にｻﾕ･ﾊﾛｳｨﾝﾏﾐを追加(thx!<a href="http://twitter.com/LostCity0710" target="_blank">@LostCity0710</a>)<br />
+　アビ覚「闇夜の旋律」に対応<br />
+2016/09/24<br />
+　攻撃スキル倍率に10を追加<br />
+2016/09/09<br />
+　チェイン数逆算時、割合ダメージを2体以上設定した場合に計算が間違うバグを修正(thx!<a href="http://twitter.com/ToshittaRIVER" target="_blank">@ToshittaRIVER</a>)<br />
+2016/09/01-2<br />
+　リーダー&amp;フレンド倍率に3.25と3.75を追加<br />
+2016/09/01-1<br />
+　追加ﾘｰﾀﾞｰ&amp;ﾌﾚﾝﾄﾞ倍率に1.5を追加<br />
+2016/08/29<br />
+　ミウ及び幾つかのタマシイが砲台に含まれていないのを修正<br />
+2016/08/23<br />
+　攻撃スキル倍率に「5 →50ﾁｪｲﾝで 7」を追加<br />
+2016/08/19<br />
+　変異すると砲台になるタマシイ(執行機関の2人)を砲台選択に含めるよう修正<br />
+2016/08/11<br />
+　順番変更の際に攻撃スキル倍率が反映されないのを修正<br />
+　入力値チェックの強化<br />
+　エラーメッセージ内容を詳細に修正(thx!<a href="http://twitter.com/hiroi01" target="_blank">@hiroi01</a>)<br />
+2016/07/28<br />
+　chain数にLｶｸﾞﾔを追加<br />
+※リーダーがカグヤの場合にチェックを入れてください。<br />
+2016/07/20<br />
+　リーダー&amp;フレンド倍率を全て数値で表現する様に修正<br />
+2016/07/20<br />
+　リーダー&amp;フレンド倍率に1.7を追加<br />
+2016/07/12<br />
+　攻撃スキル倍率に「ﾐｳ」を追加<br />
+2016/07/09<br />
+　「水着スミレ」のリーダースキル上方修正に対応<br />
+2016/07/06<br />
+　「不屈の闘魂」「高ぶる闘志」等のアビ覚に対応(thx!<a href="http://twitter.com/lie_or_you" target="_blank">@lie_or_you</a>)<br />
+2016/07/05<br />
+　☆6ヤヨイにアビ覚が無かったのを修正(thx!<a href="http://twitter.com/quartetto_99" target="_blank">@quartetto_99</a>)<br />
+2016/07/01<br />
+　進化前タマシイが砲台選択に含まれているのを修正<br />
+　一部タマシイが砲台選択に含まれていないのを修正<br />
+2016/06/26<br />
+　攻撃タマシイ数が2体以上の時、詳細設定に順番変更を追加(thx!<a href="http://twitter.com/quartetto_99" target="_blank">@quartetto_99</a>)<br />
+　攻撃タマシイ追加ボタンを追加(thx!<a href="http://twitter.com/hiroi01" target="_blank">@hiroi01</a>)<br />
+　攻撃力(アビ覚)の同上ボタンで詳細設定の固定属性･割合もコピーする様修正<br />
+2016/06/03<br />
+　固定属性･割合の初期値に「0」を設定<br />
+2016/05/27<br />
+　イースターエッグの実装(thx!<a href="http://twitter.com/SakakibaraAya" target="_blank">@SakakibaraAya</a>)<br />
+※ある操作をすると、与ダメージ値に私夜行の消滅都市でのIDが表示されます。お暇な方はどうぞ。答えはソースを見てください。<br />
+2016/05/25<br />
+　詳細設定に固定属性･割合を追加<br />
+　砲台に固定属性タマシイを追加<br />
+　砲台にアニバーサリーアミを追加<br />
+　ｿｳﾏRの倍率計算が行えていなかったバグの修正<br />
+　入力チェックを強化(後日より強化予定)<br />
+　重複していた無駄な処理を削除<br />
+2016/05/18<br />
+　攻撃スキル倍率にｱﾆﾊﾞｰｻﾘｰｱﾐを追加<br />
+　追加ﾘｰﾀﾞｰ&amp;ﾌﾚﾝﾄﾞ倍率に(アビ覚)Lv.を追加し、相互に連動する様修正<br />
+2016/05/14<br />
+　攻撃タマシイ数2体目以降の攻撃力(アビ覚)に同上を追加<br />
+2016/05/12<br />
+　詳細設定にｱｰﾃｨﾌｧｸﾄを追加<br />
+2016/04/15<br />
+　倍率上昇スキルに1.7を追加<br />
+2016/04/11<br />
+　アビ覚有り限界突破無しの砲台を選択した際、アビ覚を変更しても攻撃力が変更されないバグの修正(thx!<a href="http://twitter.com/hiroi01" target="_blank">@hiroi01</a>)<br />
+2016/04/09-2<br />
+　追加chain数の計算が間違っていたのを修正<br />
+　1番目の攻撃タマシイにも追加chain数を追加<br />
+2016/04/09-1<br />
+　倍率上昇スキルのｿｳﾏ･ﾚﾌﾟﾘｶﾝﾄの仕様を間違えていた為1から再実装<br />
+※使用上の注意の倍率上昇スキルのｿｳﾏRについてをお読みください<br />
+　攻撃タマシイ数を増やした際、限界突破攻撃力欄が表示されているバグの修正<br />
+2016/04/01<br />
+　リーダー&amp;フレンド倍率に1.3を追加<br />
+　フィルタ設定の有効/無効のチェックをラベル文クリックでも可能に修正<br />
+2016/03/27<br />
+　フィルタ設定の設定更新(延長)機能を削除<br />
+※本ページにアクセスすれば自動的に延長される為<br />
+　フィルタ設定の各種一括処理をリファクタリング<br />
+2016/03/22<br />
+　限界突破(最大Lv.120)に対応<br />
+※対応している(データがある)砲台を選択すると、<br />
+限界突破攻撃力欄が表示されます<br />
+　combo機能のUIの変更・追加<br />
+2016/03/15<br />
+　フィルタ設定のUIを微調整<br />
+2016/03/12-2<br />
+　フィルタ設定に各種一括処理と設定更新(延長)機能を追加<br />
+　追加chain数の計算の優先順位が間違っていたのを修正<br />
+2016/03/12-1<br />
+　詳細設定に追加chain数を追加<br />
+2016/03/10<br />
+　リーダー&amp;フレンド倍率及び攻撃スキル倍率にフィルタ設定機能を追加(thx!<a href="http://twitter.com/jun_etc" target="_blank">@jun_etc</a>)<br />
+2016/03/08<br />
+　防御低下スキルに10～40%ダウンを追加<br />
+2016/03/07<br />
+　リーダー&amp;フレンド倍率に4を追加<br />
+　攻撃スキル倍率に9を追加<br />
+　倍率上昇スキルにｿｳﾏ･ﾚﾌﾟﾘｶﾝﾄを追加<br />
+　詳細設定(開閉式)の追加<br />
+　詳細設定に追加ﾘｰﾀﾞｰ&amp;ﾌﾚﾝﾄﾞ倍率を追加<br />
+　ｸﾘﾃｨｶﾙ(弱克)を詳細設定に移動<br />
+　砲台選択でエンハ持ちが倍率上昇スキルに自動反映されないバグの修正<br />
+2016/03/04<br />
+　弱点克服の上方修正に対応(thx!<a href="http://twitter.com/LostCity0710" target="_blank">@LostCity0710</a>)<br />
+2016/03/01<br />
+　リーダー&amp;フレンド倍率に1.4を追加<br />
+2016/02/25<br />
+　リーダー&amp;フレンド倍率の文言を一部変更<br />
+2016/02/06<br />
+　リーダー&amp;フレンド倍率に変異チヨを追加<br />
+　リーダー&amp;フレンド倍率の文言を一部変更<br />
+2016/01/01<br />
+　攻撃スキル倍率に8を追加<br />
+2015/12/20<br />
+　リーダー&amp;フレンド倍率に3.2を追加<br />
+2015/11/30<br />
+　リーダー&amp;フレンド倍率に3.5を追加<br />
+2015/11/20<br />
+　リーダー&amp;フレンド倍率に「チヨ(☆6)」を追加<br />
+※チヨ(☆5)は既存のまま変更無し<br />
+2015/11/19<br />
+　リーダー&amp;フレンド倍率に1.8を追加<br />
+　リーダー&amp;フレンド倍率の「ナイチンゲール」に「等」を付加<br />
+※ハロウィンミヤビ等<br />
+2015/11/09<br />
+　combo機能の追加<br />
+2015/09/30<br />
+　砲台から唯我独尊ロウを除外<br />
+2015/09/23<br />
+　ｸﾘﾃｨｶﾙ(弱克)欄と機能の追加<br />
+2015/09/18<br />
+　リーダー&amp;フレンド倍率に「ナイチンゲール(☆5,☆6)」を追加<br />
+　砲台選択機能が動作していなかったのを修正<br />
+　砲台からTGS予選クエスト用助っ人タマシイを除外<br />
+2015/09/12<br />
+　リーダー&amp;フレンド倍率に2.24&amp;2.74を追加(thx!<a href="http://twitter.com/LostCity0710" target="_blank">@LostCity0710</a>)<br />
+2015/08/03<br />
+　2体以上でのチェイン数逆算時に誤ったチェイン数が算出される事があるバグの修正(thx!<a href="http://twitter.com/jun_etc" target="_blank">@jun_etc</a>)<br />
+2015/08/02<br />
+　2体以上の場合、1体目の倍率上昇スキルの設定を2体目以降にも反映する機能の追加<br />
+　2体以上の場合、1体目の倍率上昇スキルに同下ボタンを追加<br />
+2015/08/01<br />
+　2体以上の場合、2体目以降の倍率上昇スキルに同上ボタンを追加<br />
+2015/07/16-3<br />
+　攻撃タマシイ数・砲台選択から決定ボタンを削除(選択時に自動決定されます)<br />
+　砲台選択に属性絞り込み機能を追加<br />
+　砲台選択後に敵防御力(属性)を変更した場合でも属性相性が自動変更される機能の追加<br />
+※以上全て「ジュン@消滅都市」(<a href="http://twitter.com/jun_etc" target="_blank">@jun_etc</a>)氏による実装です。本当にありがとうございます！<br />
+　攻撃タマシイ数を増やす→減らす→増やすとした際、以前設定した値が残ったままになっているバグの修正<br />
+※ガラケーは切り捨てる事にしました<br />
+2015/07/16-2<br />
+　攻撃力(アビ覚)欄の機能を修正<br />
+　砲台選択で見出し行を選択した場合の動作を追加<br />
+2015/07/16-1<br />
+　ソース提供により2Pと統合(thx!<a href="http://twitter.com/jun_etc" target="_blank">@jun_etc</a>)<br />
+　砲台選択の並び順を「属性→スキル内容」から「属性→タマシイNo.」順に変更<br />
+　リーダー&amp;フレンド倍率に水着スミレを足す幅が無いので適当に修正<br />
+2015/07/11<br />
+　攻撃力(アビ覚)欄と機能の追加(thx!<a href="http://twitter.com/tomoe_shoumetsu" target="_blank">@tomoe_shoumetsu</a>)<br />
+2015/07/09<br />
+　砲台選択を属性順になるよう並び変え、見出し行を追加(thx!<a href="http://twitter.com/huruh_ata_san" target="_blank">@huruh_ata_san</a>)<br />
+　砲台選択から「選ばれしDJ アミ」を削除<br />
+2015/07/06<br />
+　敵防御力(属性)を追加<br />
+　「高防御敵一覧」からの遷移時、敵防御力(属性)が自動設定される機能の追加<br />
+　敵防御力(属性)設定時、砲台選択で属性相性が自動設定される機能の追加<br />
+　(thx!<a href="http://twitter.com/hiroi01" target="_blank">@hiroi01</a>)<br />
+※一部のガラケーでは一部の自動設定機能が動作しなくなりました<br />
+2015/07/01<br />
+　リーダー&amp;フレンド倍率にチヨを手抜き追加<br />
+2015/06/25<br />
+　砲台選択時、既に設定されている倍率上昇スキルと<br />
+防御低下スキルをなるべく変更しないように修正<br />
+　砲台選択機能がIEで正常に動作しないバグの修正<br />
+2015/06/22<br />
+　砲台選択機能を追加<br />
+　クリティカル設定を追加<br />
+　「高防御敵一覧」へのリンクを追加<br />
+※本更新から本ファイル単体では動作しません<br />
+ローカル環境で動作させたい方は<a href="cannon.js">こちらのファイル</a>も<br />
+ダウンロードし本ファイルと同じ場所に置いてください<br />
+2015/06/15<br />
+　「高防御敵一覧」との連携機能を追加<br />
+2015/05/15<br />
+　リーダー&amp;フレンド倍率に2.7を追加<br />
+　倍率上昇スキルに2.5を追加<br />
+2015/04/18<br />
+　敵防御力逆算機能の追加<br />
+　入力初期化機能の追加<br />
+　iPhoneで表示した際に属性相性が改行されていたのを修正<br />
+　その他細かな不具合の修正<br />
+2015/03/??<br />
+　ガラケー(Y!mobile向け京セラWX12K)で動作する事を確認<br />
+2015/03/12<br />
+　ジュリ(☆6)の倍率算出結果が正しい事を確認(thx!<a href="https://twitter.com/rascal0322" target="_blank">@rascal0322</a>)<br />
+2015/03/10<br />
+　リーダとフレンドの倍率にアミ・ジュリ(☆5&amp;☆6)・チャックを追加(thx!<a href="https://twitter.com/myumo123" target="_blank">@myumo123</a>)<br />
+　防御低下スキル計算結果の小数点以下を切り捨てていたが、切り上げに変更<br />
+2015/03/04<br />
+　設定した与ダメージ値から必要なチェイン数を逆算する機能の追加<br />
+※結果が999の場合、100チェインでも設定与ダメージ値を超えられない<br />
+　防御低下スキル欄の選択肢の文言を修正<br />
+2014/12/25<br />
+　リーダーとフレンドの倍率に1.2を追加<br />
+2014/12/11<br />
+　各入力欄で文字入力モード変更の実装実験<br />
+　防御力低下スキルを選択式に変更<br />
+　その他文言修正とか細々と<br />
+2014/12/10<br />
+　Safariで動作していなかったのを修正(thx!<a href="http://twitter.com/hiroi01" target="_blank">@hiroi01</a>)<br />
+2014/12/09<br />
+　作成<br />
+<hr />
+</body>
+</html>
