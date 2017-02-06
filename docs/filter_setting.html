@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=yes" />
+<meta charset="UTF-8" />
+
+<script language="JavaScript" type="text/javascript" src="leader.js"></script>
+<script language="JavaScript" type="text/javascript" src="cannon.js"></script>
+<script language="JavaScript" type="text/javascript" src="cookie.js"></script>
+<script language="JavaScript" type="text/JavaScript">
+<!--
+
+	window.onload = function(){
+		setItem();
+		setCannonList();
+		setLeaderList();
+	}
+
+	function setItem(){
+		var leader = document.getElementById('leader');
+
+		var leaders = document.getElementById('leaders');
+		var cannons = document.getElementById('cannons');
+
+		if (leader.checked){
+			leaders.style.display = "inline";
+			cannons.style.display = "none";
+		}
+		else {
+			leaders.style.display = "none";
+			cannons.style.display = "inline";
+		}
+	}
+
+	function setLeaderList(){
+		var exclude_leaders = getCokkie('exclude_leaders');
+		if (exclude_leaders == false){
+			exclude_leaders = new Object();
+		}
+		else {
+			exclude_leaders = JSON.parse(exclude_leaders);
+		}
+
+		var table = document.getElementById('leaderList');
+		while (table.firstChild){
+			table.removeChild(table.firstChild);
+		}
+		for (var i = 0; i < leaders.length; i++){
+			var tr = document.createElement('tr');
+
+			var input = document.createElement('input');
+			input.setAttribute('id', 'l_' + leaders[i][1]);
+			input.setAttribute('type', 'checkbox');
+			input.setAttribute('name', 'leader_value');
+			input.setAttribute('value', leaders[i][1]);
+			input.setAttribute('onchange', 'setExcludeLeader()');
+
+			if (exclude_leaders[leaders[i][1]] == undefined){
+				input.setAttribute('checked', 'checked');
+			}
+
+			var td1 = document.createElement('td');
+			td1.appendChild(input);
+			tr.appendChild(td1);
+
+			var td2 = document.createElement('td');
+			td2.innerHTML = '<label for="l_' + leaders[i][1] + '">' + leaders[i][0] + '</label>';
+			tr.appendChild(td2);
+
+			table.appendChild(tr);
+		}
+	}
+
+	function setExcludeLeader(){
+		var leader_values = document.getElementsByName('leader_value');
+		var exclude_leaders = new Object();
+		for (var i = 0; i < leader_values.length; i++){
+			if (leader_values[i].checked == false){
+				exclude_leaders[leader_values[i].value] = true;
+			}
+		}
+		setCokkie('exclude_leaders', JSON.stringify(exclude_leaders));
+	}
+
+	function setCannonList(){
+		var cannon_prop = document.getElementsByName('cannon_prop')[0];
+		var cannon_rare = document.getElementsByName('cannon_rare')[0];
+
+		var valied_cannon = new Object();
+		var valied_prop = new Object();
+		for (var i = 0; i < cannons.length; i++){
+			if (cannons[i][1].length == 1){
+				continue;
+			}
+
+			var data = cannons[i][1].split('_');
+			var no = data[0];
+			var prop = data[5];
+			if (cannon_prop.value != 0){
+				if (prop != cannon_prop.value){
+					continue;
+				}
+			}
+
+			if (cannon_rare.value != 0){
+				var data = cannons[i][0].split(' ');
+				if (data[0] != '☆' + cannon_rare.value){
+					continue;
+				}
+			}
+
+			valied_cannon[no] = true;
+			valied_prop[prop] = true;
+		}
+
+		var exclude_cannons = getCokkie('exclude_cannons');
+		if (exclude_cannons == false){
+			exclude_cannons = new Object();
+		}
+		else {
+			exclude_cannons = JSON.parse(exclude_cannons);
+		}
+
+		var table = document.getElementById('cannonList');
+		while (table.firstChild){
+			table.removeChild(table.firstChild);
+		}
+		for (var i = 0; i < cannons.length; i++){
+			var tr = document.createElement('tr');
+
+			if (cannons[i][1].length == 1){
+				if (valied_prop[cannons[i][1]]){
+					var td = document.createElement('td');
+					td.setAttribute('colspan', '2');
+					td.innerHTML = cannons[i][0];
+					tr.appendChild(td);
+				}
+			}
+			else {
+				var data = cannons[i][1].split('_');
+				var no = data[0];
+
+				var input = document.createElement('input');
+				input.setAttribute('id', 'c_' + no);
+				input.setAttribute('type', 'checkbox');
+				input.setAttribute('name', 'cannon_value');
+				input.setAttribute('value', no);
+				input.setAttribute('onchange', 'setExcludeCannon()');
+
+				if (exclude_cannons[no] == undefined){
+					input.setAttribute('checked', 'checked');
+				}
+
+				var td1 = document.createElement('td');
+				td1.appendChild(input);
+				tr.appendChild(td1);
+
+				var td2 = document.createElement('td');
+				td2.innerHTML = '<label for="c_' + no + '">' + cannons[i][0] + '</label>';
+
+				tr.appendChild(td2);
+
+				if (valied_cannon[no] == undefined){
+					tr.style.display = "none";
+					input.style.display = "none";
+				}
+
+			}
+
+			table.appendChild(tr);
+		}
+	}
+
+	function setExcludeCannon(){
+		var cannon_values = document.getElementsByName('cannon_value');
+		var exclude_cannons = new Object();
+		for (var i = 0; i < cannon_values.length; i++){
+			if (cannon_values[i].checked == false){
+				exclude_cannons[cannon_values[i].value] = true;
+			}
+		}
+		setCokkie('exclude_cannons', JSON.stringify(exclude_cannons));
+	}
+
+
+	// 一括処理
+
+	function bulkCheck(mode){
+		var leader = document.getElementById('leader');
+		var checks = leader.checked ? document.filter.leader_value : document.filter.cannon_value;
+
+		for (var i = 0; i < checks.length; i++){
+			if (mode == "on"){
+				if (checks[i].style.display != "none"){
+					checks[i].checked = true;
+				}
+			}
+			else if (mode == "off"){
+				if (checks[i].style.display != "none"){
+					checks[i].checked = false;
+				}
+			}
+			else if (mode == "rev"){
+				if (checks[i].style.display != "none"){
+					checks[i].checked = !checks[i].checked;
+				}
+			}
+		}
+
+		leader.checked ? setExcludeLeader() : setExcludeCannon();
+	}
+
+
+//-->
+</script>
+
+<title>消滅都市関連物置｜フィルタ設定</title>
+</head>
+<body>
+<form name="filter">
+<a href="damage.html">ダメージ計算機に戻る</a><br />
+<hr />
+<input type="radio" name="item" id="leader" checked="checked" onClick="setItem();"><label for="leader">リーダー倍率</label>&nbsp;&nbsp;
+<input type="radio" name="item" id="cannon" onClick="setItem();"><label for="cannon">砲台</label>
+<hr />
+
+<div id="leaders">
+最低1つはチェックしてください。
+<table id="leaderList" border="0">
+</table>
+</div>
+
+<div id="cannons">
+<select name="cannon_prop" onChange="setCannonList();">
+<option value="0">－</option>
+<option value="1">火</option>
+<option value="2">水</option>
+<option value="3">木</option>
+<option value="4">光</option>
+<option value="5">闇</option>
+</select>
+<select name="cannon_rare" onChange="setCannonList();">
+<option value="0">－</option>
+<option value="4">☆4</option>
+<option value="5">☆5</option>
+<option value="6">☆6</option>
+</select>
+<table id="cannonList" border="0">
+</table>
+</div>
+
+<hr />
+<div style="border: 0; line-height: 200%;">
+・一括処理<br />
+<input type="button" value="全チェックON" onclick="bulkCheck('on');" />　
+<input type="button" value="全チェックOFF" onclick="bulkCheck('off');" /><br />
+<input type="button" value="チェック反転" onclick="bulkCheck('rev');" /><br />
+<hr />
+・Cookie<br />
+<input type="button" onclick="delCokkie('exclude_leaders');delCokkie('exclude_cannons');setLeaderList();setCannonList();" value="設定初期化" />
+</div>
+<hr />
+
+<a href="damage.html">ダメージ計算機に戻る</a><br />
+<hr />
+</form>
+</body>
+</html>
