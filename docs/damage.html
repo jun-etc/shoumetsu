@@ -483,7 +483,7 @@
 			skill = 1 + Math.floor(chain / 20);
 		}
 		else if (skill == SKL_MIU){
-			skill = 4 + Math.floor(chain / 20);
+			skill = 5 + Math.floor(chain / 20);
 		}
 		else if (skill == SKL_5TO7){
 			if (chain < 50){
@@ -846,6 +846,9 @@
 	var L_CHUCK = -99;
 	var L_CHIYO_H1 = -7;
 	var L_CHIYO_H2 = -8;
+	var L_KANO5 = -9;
+	var L_KANO6 = -10;
+	var L_SAYU6 = -11;
 
 	function calcLeader(type, chain){
 		var rate = 1;
@@ -888,6 +891,18 @@
 		else if (type == L_CHIYO_H2){
 			if (chain > 60) chain = 60;
 			rate = 2 + (chain / 60);
+		}
+		else if (type == L_KANO5){
+			if (chain > 90) chain = 90;
+			rate = 1 + (chain / 45);
+		}
+		else if (type == L_KANO6){
+			if (chain > 90) chain = 90;
+			rate = 2.5 + (chain / 60);
+		}
+		else if (type == L_SAYU6){
+			if (chain > 60) chain = 60;
+			rate = 2.5 + (chain / 60);
 		}
 
 		return rate;
@@ -1385,6 +1400,53 @@
 	}
 
 
+	// thanks to https://gist.github.com/kawanet/5553478
+	/** カタカナをひらがなに変換する関数
+	 * @param {String} src - カタカナ
+	 * @returns {String} - ひらがな
+	 */
+	function katakanaToHiragana(src) {
+		return src.replace(/[\u30a1-\u30f6]/g, function(match) {
+			var chr = match.charCodeAt(0) - 0x60;
+			return String.fromCharCode(chr);
+		});
+	}
+
+	function changeCannon(number, value) {
+		var dmg = document.damage;
+		dmg.elements["cannon" + number].value = value;
+		setTimeout( function(number, value) {
+			var suggestList = document.getElementById("searchCannonSuggest" + number);
+			suggestList.style.display = "none";
+			setCannonData(number);
+		}, 50, number, value);
+	};
+
+	function searchCannon(number){
+		var suggestList = document.getElementById("searchCannonSuggest" + number);
+		while (suggestList.firstChild){
+			suggestList.removeChild(suggestList.firstChild);
+		}
+		suggestList.style.display = "none";
+		var text = document.getElementById("searchCannonInput" + number).value;
+		var options = document.getElementById('selCannon' + number).options;
+		if (text == "") {
+			return;
+		}
+		for (var i = 0; i < options.length; i++) {
+			if (katakanaToHiragana(options[i].text).indexOf(katakanaToHiragana(text)) != -1) {
+				var element = document.createElement('dev');
+				element.style.display = "block";
+				element.style.padding = "1px";
+				element.innerHTML = options[i].text;
+				element.onclick = new Function('changeCannon('+number+', "'+options[i].value+'");');
+				suggestList.appendChild(element);
+				suggestList.style.display = "block";
+			}
+		}
+	}
+
+
 //-->
 </script>
 
@@ -1441,6 +1503,13 @@
 
 <tr>
 <td colspan="2"><hr /></td>
+</tr>
+
+<tr class="member1">
+<td>砲台検索</td><td>
+<input id="searchCannonInput1" type="text" value="" autocomplete="off" onInput="searchCannon(1);" />
+<div id="searchCannonSuggest1" style="display:none; position: absolute; background-color: #FFFFFF;"></div>
+</td>
 </tr>
 
 <tr class="member1">
@@ -1673,6 +1742,12 @@
 <td colspan="2"><hr /></td>
 </tr>
 
+<tr class="member2" style="display:none">
+<td>砲台検索</td><td>
+<input id="searchCannonInput2" type="text" value="" autocomplete="off" onInput="searchCannon(2);" />
+<div id="searchCannonSuggest2" style="display:none; position: absolute; background-color: #FFFFFF;"></div>
+</td>
+</tr>
 
 <tr class="member2" style="display:none">
 <td colspan="2">
@@ -1905,6 +1980,12 @@
 <td colspan="2"><hr /></td>
 </tr>
 
+<tr class="member3" style="display:none">
+<td>砲台検索</td><td>
+<input id="searchCannonInput3" type="text" value="" autocomplete="off" onInput="searchCannon(3);" />
+<div id="searchCannonSuggest3" style="display:none; position: absolute; background-color: #FFFFFF;"></div>
+</td>
+</tr>
 
 <tr class="member3" style="display:none">
 <td colspan="2">
@@ -2137,6 +2218,12 @@
 <td colspan="2"><hr /></td>
 </tr>
 
+<tr class="member4" style="display:none">
+<td>砲台検索</td><td>
+<input id="searchCannonInput4" type="text" value="" autocomplete="off" onInput="searchCannon(4);" />
+<div id="searchCannonSuggest4" style="display:none; position: absolute; background-color: #FFFFFF;"></div>
+</td>
+</tr>
 
 <tr class="member4" style="display:none">
 <td colspan="2">
@@ -2369,6 +2456,12 @@
 <td colspan="2"><hr /></td>
 </tr>
 
+<tr class="member5" style="display:none">
+<td>砲台検索</td><td>
+<input id="searchCannonInput5" type="text" value="" autocomplete="off" onInput="searchCannon(5);" />
+<div id="searchCannonSuggest5" style="display:none; position: absolute; background-color: #FFFFFF;"></div>
+</td>
+</tr>
 
 <tr class="member5" style="display:none">
 <td colspan="2">
@@ -2601,6 +2694,12 @@
 <td colspan="2"><hr /></td>
 </tr>
 
+<tr class="member6" style="display:none">
+<td>砲台検索</td><td>
+<input id="searchCannonInput6" type="text" value="" autocomplete="off" onInput="searchCannon(6);" />
+<div id="searchCannonSuggest6" style="display:none; position: absolute; background-color: #FFFFFF;"></div>
+</td>
+</tr>
 
 <tr class="member6" style="display:none">
 <td colspan="2">
@@ -2984,6 +3083,28 @@ Cookieの保存期間は60日間です。<br />
 <a href="./">サイトTOPへ</a>
 <hr />
 ・更新履歴<br />
+2017/01/29<br />
+　砲台検索機能の追加(thx!<a href="http://twitter.com/hiroi01" target="_blank">@hiroi01</a>)<br />
+2017/01/21<br />
+　カオルのアビ覚に対応(thx!<a href="http://twitter.com/moka_shou" target="_blank">@moka_shou</a>)<br />
+2017/01/18<br />
+　ミウが砲台に含まれていないのを修正(thx!<a href="http://twitter.com/otodori_toshi" target="_blank">@otodori_toshi</a>)<br />
+2017/01/14<br />
+　リーダー&amp;フレンド倍率に3.35、3.45を追加(thx!<a href="http://twitter.com/LostCity0710" target="_blank">@LostCity0710</a>)<br />
+2016/12/23<br />
+　ミウの上方修正に対応<br />
+2016/12/17<br />
+　リーダー&フレンド倍率に2.5 →60ﾁｪｲﾝで 3.5を追加<br />
+2016/12/13<br />
+　リーダー&amp;フレンド倍率に3.1、3.3、3.4を追加<br />
+2016/12/09<br />
+　「カノ」のリーダースキル上方修正に対応<br />
+2016/12/03<br />
+　倍率上昇スキルの3、3.2、3.5、4を削除<br />
+2016/11/18<br />
+　倍率上昇スキルに3、3.2、3.5、4を追加<br />
+2016/11/02<br />
+　リーダー&amp;フレンド倍率に「1 →90ﾁｪｲﾝで 3」と「2 →90ﾁｪｲﾝで 4」を追加<br />
 2016/10/09<br />
 　割合ダメージスキル持ちタマシイも砲台に追加する様に修正<br />
 2016/10/07<br />
