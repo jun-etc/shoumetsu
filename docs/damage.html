@@ -336,6 +336,22 @@
 		if (dmg.elements["btnDetail" + from].value == "閉じる"){
 			openDetail(to);
 			dmg.elements["addFixedPercent" + to].value = dmg.elements["addFixedPercent" + from].value;
+
+			var addL_sel_from = dmg.elements["addLeader" + from].selectedIndex;
+			var addF_sel_from = dmg.elements["addFriend" + from].selectedIndex;
+			var crit_val_from = getRadioButtonValue(dmg.elements["critical" + from]);
+			var weak_sel_from = dmg.elements["weak" + from].selectedIndex;
+			var addC_val_from = dmg.elements["addChain" + from].value;
+			var artf_sel_from = dmg.elements["artifact" + from].selectedIndex;
+
+			dmg.elements["addLeader" + to].selectedIndex = addL_sel_from;
+			linkAddLF('Leader', to, 'Org');
+			dmg.elements["addFriend" + to].selectedIndex = addF_sel_from;
+			linkAddLF('Friend', to, 'Org');
+			setRadioButtonValue(dmg.elements["critical" + to], crit_val_from);
+			dmg.elements["weak" + to].selectedIndex = weak_sel_from;
+			dmg.elements["addChain" + to].value = addC_val_from;
+			dmg.elements["artifact" + to].selectedIndex = artf_sel_from;
 		}
 	}
 
@@ -426,7 +442,7 @@
 			linkAddLF('Leader', to, 'Org');
 			dmg.elements["addFriend" + to].selectedIndex = addF_sel_from;
 			linkAddLF('Friend', to, 'Org');
-			setRadioButtonValue(crit_val_from);
+			setRadioButtonValue(dmg.elements["critical" + to], crit_val_from);
 			dmg.elements["weak" + to].selectedIndex = weak_sel_from;
 			dmg.elements["addChain" + to].value = addC_val_from;
 			dmg.elements["artifact" + to].selectedIndex = artf_sel_from;
@@ -445,7 +461,7 @@
 			linkAddLF('Leader', from, 'Org');
 			dmg.elements["addFriend" + from].selectedIndex = addF_sel_to;
 			linkAddLF('Friend', from, 'Org');
-			setRadioButtonValue(crit_val_to);
+			setRadioButtonValue(dmg.elements["critical" + from], crit_val_to);
 			dmg.elements["weak" + from].selectedIndex = weak_sel_to;
 			dmg.elements["addChain" + from].value = addC_val_to;
 			dmg.elements["artifact" + from].selectedIndex = artf_sel_to;
@@ -633,19 +649,30 @@
 			dmg.copyUp1.style.display = "none";
 		}
 
-		element = document.getElementsByClassName("add_member");
-		for (var i = 0; i < element.length; i++){
-			if (dmg.member.value < 6){
-				element[i].style.display = "table-row";
-			} else {
-				element[i].style.display = "none";
-			}
+		element = document.getElementById("add_member");
+		if (dmg.member.value < 6){
+			element.style.display = "block";
+		} else {
+			element.style.display = "none";
+		}
+
+		element = document.getElementById("del_member");
+		if (dmg.member.value > 1){
+			element.style.display = "block";
+		} else {
+			element.style.display = "none";
 		}
 	}
 
 	function addMemberNumber(){
 		var sel = document.damage.member.selectedIndex;
 		document.damage.member.selectedIndex = ++sel;
+		setMemberNumber();
+	}
+
+	function delMemberNumber(){
+		var sel = document.damage.member.selectedIndex;
+		document.damage.member.selectedIndex = --sel;
 		setMemberNumber();
 	}
 
@@ -843,6 +870,7 @@
 	var L_CHIYO6 = -4;
 	var L_NI5   = -5;
 	var L_NI6   = -6;
+	var L_NI61  = -12;
 	var L_CHUCK = -99;
 	var L_CHIYO_H1 = -7;
 	var L_CHIYO_H2 = -8;
@@ -879,6 +907,10 @@
 		else if (type == L_NI6){
 			if (chain > 60) chain = 60;
 			rate = 2.5 + (chain / 120);
+		}
+		else if (type == L_NI61){
+			if (chain > 60) chain = 60;
+			rate = 2 + (chain / 40);
 		}
 		else if (type == L_CHUCK){
 			if (chain > 30) chain = 30;
@@ -1419,6 +1451,7 @@
 			var suggestList = document.getElementById("searchCannonSuggest" + number);
 			suggestList.style.display = "none";
 			setCannonData(number);
+			dmg.elements["searchCannonInput" + number].value = '';
 		}, 50, number, value);
 	};
 
@@ -1437,9 +1470,12 @@
 			if (katakanaToHiragana(options[i].text).indexOf(katakanaToHiragana(text)) != -1) {
 				var element = document.createElement('dev');
 				element.style.display = "block";
-				element.style.padding = "1px";
+				element.style.padding = "2px";
+				element.style.border = "outset 2px #FFFFFF";
 				element.innerHTML = options[i].text;
 				element.onclick = new Function('changeCannon('+number+', "'+options[i].value+'");');
+				element.onmouseover = new Function('this.style.backgroundColor = "#66FFFF"');
+				element.onmouseout = new Function('this.style.backgroundColor = "#FFFFFF"');
 				suggestList.appendChild(element);
 				suggestList.style.display = "block";
 			}
@@ -1569,6 +1605,8 @@
 <option value="8">8</option>
 <option value="9">9</option>
 <option value="10">10</option>
+<option value="11">11</option>
+<option value="12">12</option>
 <option value="-3">5 →50ﾁｪｲﾝで 7</option>
 <option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
 <option value="-2">ﾐｳ</option>
@@ -1717,6 +1755,7 @@
 <td>
 <select name="artifact1">
 <option value="0">無</option>
+<option value="150">+150</option>
 <option value="200">+200</option>
 <option value="300">+300</option>
 </select>
@@ -1807,6 +1846,8 @@
 <option value="8">8</option>
 <option value="9">9</option>
 <option value="10">10</option>
+<option value="11">11</option>
+<option value="12">12</option>
 <option value="-3">5 →50ﾁｪｲﾝで 7</option>
 <option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
 <option value="-2">ﾐｳ</option>
@@ -1955,6 +1996,7 @@
 <td>
 <select name="artifact2">
 <option value="0">無</option>
+<option value="150">+150</option>
 <option value="200">+200</option>
 <option value="300">+300</option>
 </select>
@@ -2045,6 +2087,8 @@
 <option value="8">8</option>
 <option value="9">9</option>
 <option value="10">10</option>
+<option value="11">11</option>
+<option value="12">12</option>
 <option value="-3">5 →50ﾁｪｲﾝで 7</option>
 <option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
 <option value="-2">ﾐｳ</option>
@@ -2193,6 +2237,7 @@
 <td>
 <select name="artifact3">
 <option value="0">無</option>
+<option value="150">+150</option>
 <option value="200">+200</option>
 <option value="300">+300</option>
 </select>
@@ -2283,6 +2328,8 @@
 <option value="8">8</option>
 <option value="9">9</option>
 <option value="10">10</option>
+<option value="11">11</option>
+<option value="12">12</option>
 <option value="-3">5 →50ﾁｪｲﾝで 7</option>
 <option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
 <option value="-2">ﾐｳ</option>
@@ -2431,6 +2478,7 @@
 <td>
 <select name="artifact4">
 <option value="0">無</option>
+<option value="150">+150</option>
 <option value="200">+200</option>
 <option value="300">+300</option>
 </select>
@@ -2521,6 +2569,8 @@
 <option value="8">8</option>
 <option value="9">9</option>
 <option value="10">10</option>
+<option value="11">11</option>
+<option value="12">12</option>
 <option value="-3">5 →50ﾁｪｲﾝで 7</option>
 <option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
 <option value="-2">ﾐｳ</option>
@@ -2669,6 +2719,7 @@
 <td>
 <select name="artifact5">
 <option value="0">無</option>
+<option value="150">+150</option>
 <option value="200">+200</option>
 <option value="300">+300</option>
 </select>
@@ -2759,6 +2810,8 @@
 <option value="8">8</option>
 <option value="9">9</option>
 <option value="10">10</option>
+<option value="11">11</option>
+<option value="12">12</option>
 <option value="-3">5 →50ﾁｪｲﾝで 7</option>
 <option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
 <option value="-2">ﾐｳ</option>
@@ -2907,6 +2960,7 @@
 <td>
 <select name="artifact6">
 <option value="0">無</option>
+<option value="150">+150</option>
 <option value="200">+200</option>
 <option value="300">+300</option>
 </select>
@@ -2933,10 +2987,11 @@
 </tr>
 
 
-<tr class="add_member">
-<td colspan="2"><input type="button" value="攻撃タマシイ追加" onClick="addMemberNumber();"></td>
+<tr>
+<td><input id="add_member" type="button" value="攻撃タマシイ追加" onClick="addMemberNumber();"></td>
+<td><input id="del_member" style="display:none" type="button" value="攻撃タマシイ減少" onClick="delMemberNumber();"></td>
 </tr>
-<tr class="add_member">
+<tr>
 <td colspan="2"><hr /></td>
 </tr>
 
@@ -3083,6 +3138,16 @@ Cookieの保存期間は60日間です。<br />
 <a href="./">サイトTOPへ</a>
 <hr />
 ・更新履歴<br />
+2017/02/14<br />
+　リーダー&amp;フレンド倍率に2.1, 2.3, 2.4, 3.24, 3.375, 2 →60ﾁｪｲﾝで 3.5を追加<br />
+　攻撃スキル倍率に11,12を追加<br />
+　ｱｰﾃｨﾌｧｸﾄに+150を追加<br />
+2017/02/12<br />
+　攻撃タマシイ減少ボタンを追加<br />
+　砲台検索での絞り込みリストに枠線を追加<br />
+　砲台検索での絞り込み決定時に検索ワードを消去する様に修正<br />
+　攻撃力(アビ覚)同上ボタン押下時、詳細内の全ての項目をコピーする様に修正<br />
+　順番変更時、クリティカルの値が反映されていなかったのを修正<br />
 2017/01/29<br />
 　砲台検索機能の追加(thx!<a href="http://twitter.com/hiroi01" target="_blank">@hiroi01</a>)<br />
 2017/01/21<br />
@@ -3094,7 +3159,7 @@ Cookieの保存期間は60日間です。<br />
 2016/12/23<br />
 　ミウの上方修正に対応<br />
 2016/12/17<br />
-　リーダー&フレンド倍率に2.5 →60ﾁｪｲﾝで 3.5を追加<br />
+　リーダー&amp;フレンド倍率に2.5 →60ﾁｪｲﾝで 3.5を追加<br />
 2016/12/13<br />
 　リーダー&amp;フレンド倍率に3.1、3.3、3.4を追加<br />
 2016/12/09<br />
