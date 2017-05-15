@@ -874,8 +874,11 @@
 	var L_CHUCK = -99;
 	var L_CHIYO_H1 = -7;
 	var L_CHIYO_H2 = -8;
+	var L_CHIYO_H3 = -14;
+	var L_CHIYO_H4 = -15;
 	var L_KANO5 = -9;
 	var L_KANO6 = -10;
+	var L_KANO61 = -13;
 	var L_SAYU6 = -11;
 
 	function calcLeader(type, chain){
@@ -932,9 +935,21 @@
 			if (chain > 90) chain = 90;
 			rate = 2.5 + (chain / 60);
 		}
+		else if (type == L_KANO61){
+			if (chain > 90) chain = 90;
+			rate = 3 + (chain / 90);
+		}
 		else if (type == L_SAYU6){
 			if (chain > 60) chain = 60;
 			rate = 2.5 + (chain / 60);
+		}
+		else if (type == L_CHIYO_H3){
+			if (chain > 50) chain = 50;
+			rate = 2.5 + (chain / 50);
+		}
+		else if (type == L_CHIYO_H4){
+			if (chain > 50) chain = 50;
+			rate = 2 + (chain * 0.03);
 		}
 
 		return rate;
@@ -1624,6 +1639,7 @@
 <option value="1.7">1.7</option>
 <option value="2">2</option>
 <option value="2.5">2.5</option>
+<option value="3">3</option>
 <option value="-1">ｿｳﾏR</option>
 </select><input type="text" value="0" name="upSouma1" style="display: none; width: 3em;" maxlength="3" pattern="^[0-9]+$">
 <input type="button" value="同下" name="copyUp1" onClick="copyUp(1, 2);" style="display:none">
@@ -1865,6 +1881,7 @@
 <option value="1.7">1.7</option>
 <option value="2">2</option>
 <option value="2.5">2.5</option>
+<option value="3">3</option>
 <option value="-1">ｿｳﾏR</option>
 </select><input type="text" value="0" name="upSouma2" style="display: none; width: 3em;" maxlength="3" pattern="^[0-9]+$">
 <input type="button" value="同上" name="copyUp2" onClick="copyUp(2, 1);">
@@ -2106,6 +2123,7 @@
 <option value="1.7">1.7</option>
 <option value="2">2</option>
 <option value="2.5">2.5</option>
+<option value="3">3</option>
 <option value="-1">ｿｳﾏR</option>
 </select><input type="text" value="0" name="upSouma3" style="display: none; width: 3em;" maxlength="3" pattern="^[0-9]+$">
 <input type="button" value="同上" name="copyUp3" onClick="copyUp(3, 2);">
@@ -2347,6 +2365,7 @@
 <option value="1.7">1.7</option>
 <option value="2">2</option>
 <option value="2.5">2.5</option>
+<option value="3">3</option>
 <option value="-1">ｿｳﾏR</option>
 </select><input type="text" value="0" name="upSouma4" style="display: none; width: 3em;" maxlength="3" pattern="^[0-9]+$">
 <input type="button" value="同上" name="copyUp4" onClick="copyUp(4, 3);">
@@ -2588,6 +2607,7 @@
 <option value="1.7">1.7</option>
 <option value="2">2</option>
 <option value="2.5">2.5</option>
+<option value="3">3</option>
 <option value="-1">ｿｳﾏR</option>
 </select><input type="text" value="0" name="upSouma5" style="display: none; width: 3em;" maxlength="3" pattern="^[0-9]+$">
 <input type="button" value="同上" name="copyUp5" onClick="copyUp(5, 4);">
@@ -2829,6 +2849,7 @@
 <option value="1.7">1.7</option>
 <option value="2">2</option>
 <option value="2.5">2.5</option>
+<option value="3">3</option>
 <option value="-1">ｿｳﾏR</option>
 </select><input type="text" value="0" name="upSouma6" style="display: none; width: 3em;" maxlength="3" pattern="^[0-9]+$">
 <input type="button" value="同上" name="copyUp6" onClick="copyUp(6, 5);">
@@ -3138,6 +3159,12 @@ Cookieの保存期間は60日間です。<br />
 <a href="./">サイトTOPへ</a>
 <hr />
 ・更新履歴<br />
+2017/04/23<br />
+　リーダー&amp;フレンド倍率に2.5 →50ﾁｪｲﾝで 3.5, 2 →50ﾁｪｲﾝで 3.5を追加<br />
+2017/03/24<br />
+　リーダー&amp;フレンド倍率に3 →90ﾁｪｲﾝで 4を追加<br />
+2017/03/17<br />
+　倍率上昇スキルに3を追加<br />
 2017/02/14<br />
 　リーダー&amp;フレンド倍率に2.1, 2.3, 2.4, 3.24, 3.375, 2 →60ﾁｪｲﾝで 3.5を追加<br />
 　攻撃スキル倍率に11,12を追加<br />
