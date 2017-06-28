@@ -87,6 +87,24 @@
 	}
 
 
+	// 限界突破攻撃力初期化
+	function clearLimit(number){
+		var dmg = document.damage;
+		var limit = dmg.elements["limit" + number];
+
+		while (limit.firstChild){
+			limit.removeChild(limit.firstChild);
+		}
+
+		var option = document.createElement('option');
+		option.setAttribute('value', 0);
+		option.innerHTML = '無凸(Lv.99)';
+		limit.appendChild(option);
+
+		var limitOpts = limit.options;
+		limitOpts[0].selected = true;
+	}
+
 	// 砲台選択
 	var NUM_A_AMI = 1611;
 	var SKL_A_AMI = -1;
@@ -113,6 +131,8 @@
 		var limit = dmg.elements["limit" + number];
 		var tr_limit = document.getElementById("tr_limit" + number);
 
+		var option;
+
 		// 見出し行選択時
 		if (cannon.value.length == 1){
 			attack.value = '';
@@ -137,8 +157,7 @@
 			var ablOpts = ability.options;
 			ablOpts[0].selected = true;
 
-			limit.value = '';
-			limit.checked = false;
+			clearLimit(number);
 			tr_limit.style.display = "none";
 		}
 		else {
@@ -246,11 +265,9 @@
 				}
 
 				for (i = 0; i <= data[6]; i++){
-					var option = document.createElement('option');
-
+					option = document.createElement('option');
 					option.setAttribute('value', i);
 					option.innerHTML = (i == 0)? '無': i;
-
 					ability.appendChild(option);
 				}
 
@@ -264,15 +281,47 @@
 			var ablOpts = ability.options;
 			ablOpts[0].selected = true;
 
+
 			// 限界突破攻撃力設定
-			limit.checked = false;
 			if (data[9] > 0){
 				attack_org.value = data[1];
-				limit.value = data[9];
+
+				while (limit.firstChild){
+					limit.removeChild(limit.firstChild);
+				}
+
+				option = document.createElement('option');
+				option.setAttribute('value', 0);
+				option.innerHTML = '無凸(Lv.99)';
+				limit.appendChild(option);
+
+				option = document.createElement('option');
+				option.setAttribute('value', parseInt(data[1] * 1.05));
+				option.innerHTML = '1凸(Lv.105)';
+				limit.appendChild(option);
+
+				option = document.createElement('option');
+				option.setAttribute('value', parseInt(data[1] * 1.1));
+				option.innerHTML = '2凸(Lv.110)';
+				limit.appendChild(option);
+
+				option = document.createElement('option');
+				option.setAttribute('value', parseInt(data[1] * 1.15));
+				option.innerHTML = '3凸(Lv.115)';
+				limit.appendChild(option);
+
+				option = document.createElement('option');
+				option.setAttribute('value', data[9]);
+				option.innerHTML = '4凸(Lv.120)';
+				limit.appendChild(option);
+
+				var limitOpts = limit.options;
+				limitOpts[0].selected = true;
+
 				tr_limit.style.display = "table-row";
 			}
 			else {
-				limit.value = '';
+				clearLimit(number);
 				tr_limit.style.display = "none";
 			}
 
@@ -328,9 +377,10 @@
 			wait(200);
 		}
 
-		if (limit_from.checked){
-			limit_to.checked = true;
-			clickLimit(to);
+		if (limit_from.value > 0){
+			limit_to.selectedIndex = limit_from.selectedIndex;
+			changeLimit(to);
+			wait(200);
 		}
 
 		if (dmg.elements["btnDetail" + from].value == "閉じる"){
@@ -379,7 +429,8 @@
 		var attack_org_val_to = attack_org_to.value;
 		var ability_sel_to = ability_to.selectedIndex;
 		var ability_style_to = ability_to.style.display;
-		var limit_check_to = limit_from.checked;
+		var limit_sel_to = limit_to.selectedIndex;
+		var limit_value_to = limit_to.value;
 
 		var skill_sel_from = dmg.elements["skill" + from].selectedIndex;
 		var up_sel_from = dmg.elements["up" + from].selectedIndex;
@@ -426,9 +477,10 @@
 			wait(200);
 		}
 
-		if (limit_check_to){
-			limit_from.checked = true;
-			clickLimit(from);
+		if (limit_value_to > 0){
+			limit_from.selectedIndex = limit_sel_to;
+			changeLimit(from);
+			wait(200);
 		}
 
 
@@ -552,7 +604,7 @@
 		var limit = dmg.elements["limit" + number];
 
 		if (attack_org.value){
-			if (limit.value && limit.checked){
+			if (limit.options.length > 1 && limit.value > 0){
 				var ablLv = parseInt(ability.value);
 				var atkOrg = parseInt(limit.value);
 				attack.value = atkOrg + (ablLv * getAbilityPower(ability.length));
@@ -567,15 +619,15 @@
 
 
 	// 限界突破攻撃力設定
-	function clickLimit(number){
+	function changeLimit(number){
 		var dmg = document.damage;
 		var ability = dmg.elements["ability" + number];
 		var attack = dmg.elements["attack" + number];
 		var attack_org = dmg.elements["attack_org" + number];
 		var limit = dmg.elements["limit" + number];
 
-		if (attack_org.value && limit.value){
-			if (limit.checked == true){
+		if (attack_org.value && limit.options.length > 1){
+			if (limit.value > 0){
 				attack.value = limit.value;
 
 				if (ability.style.display != "none"){
@@ -1593,7 +1645,9 @@
 
 <tr class="member1" style="display:none" id="tr_limit1">
 <td>限界突破攻撃力</td><td>
-<input type="checkbox" name="limit1" value="" id="max_limit1" onclick="clickLimit(1);"><label for="max_limit1">最大(Lv.120)</label>
+<select name="limit1" id="max_limit1" onChange="changeLimit(1);">
+<option value="0" selected="selected">無凸(Lv.99)</option>
+</select>
 </td>
 </tr>
 
@@ -1835,7 +1889,9 @@
 
 <tr class="member2" style="display:none" id="tr_limit2">
 <td>限界突破攻撃力</td><td>
-<input type="checkbox" name="limit2" value="" id="max_limit2" onclick="clickLimit(2);"><label for="max_limit2">最大(Lv.120)</label>
+<select name="limit2" id="max_limit2" onChange="changeLimit(2);">
+<option value="0" selected="selected">無凸(Lv.99)</option>
+</select>
 </td>
 </tr>
 
@@ -2077,7 +2133,9 @@
 
 <tr class="member3" style="display:none" id="tr_limit3">
 <td>限界突破攻撃力</td><td>
-<input type="checkbox" name="limit3" value="" id="max_limit3" onclick="clickLimit(3);"><label for="max_limit3">最大(Lv.120)</label>
+<select name="limit3" id="max_limit3" onChange="changeLimit(3);">
+<option value="0" selected="selected">無凸(Lv.99)</option>
+</select>
 </td>
 </tr>
 
@@ -2319,7 +2377,9 @@
 
 <tr class="member4" style="display:none" id="tr_limit4">
 <td>限界突破攻撃力</td><td>
-<input type="checkbox" name="limit4" value="" id="max_limit4" onclick="clickLimit(4);"><label for="max_limit4">最大(Lv.120)</label>
+<select name="limit4" id="max_limit4" onChange="changeLimit(4);">
+<option value="0" selected="selected">無凸(Lv.99)</option>
+</select>
 </td>
 </tr>
 
@@ -2561,7 +2621,9 @@
 
 <tr class="member5" style="display:none" id="tr_limit5">
 <td>限界突破攻撃力</td><td>
-<input type="checkbox" name="limit5" value="" id="max_limit5" onclick="clickLimit(5);"><label for="max_limit5">最大(Lv.120)</label>
+<select name="limit5" id="max_limit5" onChange="changeLimit(5);">
+<option value="0" selected="selected">無凸(Lv.99)</option>
+</select>
 </td>
 </tr>
 
@@ -2803,7 +2865,9 @@
 
 <tr class="member6" style="display:none" id="tr_limit6">
 <td>限界突破攻撃力</td><td>
-<input type="checkbox" name="limit6" value="" id="max_limit6" onclick="clickLimit(6);"><label for="max_limit6">最大(Lv.120)</label>
+<select name="limit6" id="max_limit6" onChange="changeLimit(6);">
+<option value="0" selected="selected">無凸(Lv.99)</option>
+</select>
 </td>
 </tr>
 
@@ -3159,6 +3223,9 @@ Cookieの保存期間は60日間です。<br />
 <a href="./">サイトTOPへ</a>
 <hr />
 ・更新履歴<br />
+2017/06/28<br />
+　限界突破攻撃力を1～3凸も選べる様に修正(thx!<a href="https://twitter.com/makotarosaaaaan" target="_blank">@makotarosaaaaan</a>)<br />
+　固定属性･割合の砲台を選択時、限界突破攻撃力を設定できない様に修正<br />
 2017/05/27<br />
 　リーダー&amp;フレンド倍率に4.5を追加<br />
 2017/04/23<br />
@@ -3375,7 +3442,7 @@ Cookieの保存期間は60日間です。<br />
 　リーダー&amp;フレンド倍率にチヨを手抜き追加<br />
 2015/06/25<br />
 　砲台選択時、既に設定されている倍率上昇スキルと<br />
-防御低下スキルをなるべく変更しないように修正<br />
+防御低下スキルをなるべく変更しない様に修正<br />
 　砲台選択機能がIEで正常に動作しないバグの修正<br />
 2015/06/22<br />
 　砲台選択機能を追加<br />
