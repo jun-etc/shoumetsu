@@ -124,6 +124,8 @@
 
 		var option;
 
+		closeDetail(number);
+
 		// 見出し行選択時
 		if (cannon.value.length == 1){
 			attack.value = '';
@@ -214,6 +216,21 @@
 					}
 				}
 			}
+			// 連射対応
+			else if (data[2] == -1){
+				for (i = 0; i < rapids.length; i++){
+					var rapidDiv = rapids[i][0].split("_");
+					for (j = 0; j < rapidDiv.length; j++){
+						if (rapidDiv[j] == data[0]){
+							openDetail(number);
+							var rapidOpts = dmg.elements["rapid" + number].options;
+							rapidOpts[i + 1].selected = true;
+							break;
+						}
+					}
+				}
+				skillOpts[0].selected = true;
+			}
 			else {
 				for (i = 0; i < skillOpts.length; i++){
 					if (skillOpts[i].value == data[2]){
@@ -222,7 +239,8 @@
 					}
 				}
 			}
-			if (data[3] != 1){
+
+			if (data[3] > 1){
 				var upOpts = up.options;
 				for (i = 0; i < upOpts.length; i++){
 					if (upOpts[i].value == data[3]){
@@ -231,6 +249,7 @@
 					}
 				}
 			}
+
 			if (data[4] != 1){
 				var downOpts = down.options;
 				for (i = 0; i < downOpts.length; i++){
@@ -242,9 +261,12 @@
 			}
 
 			// 属性相性自動変更
-			var propCannon = parseInt(data[5]);
+			var propCannon1 = parseInt(data[5]);
+			var propCannon2 = parseInt(data[11]);
 			var propEnemy = parseInt(dmg.prop.value);
-			setRadioButtonValue(attr, PROP_TABLE[propCannon][propEnemy]);
+			var propCannonBetter = (PROP_TABLE[propCannon1][propEnemy] > PROP_TABLE[propCannon2][propEnemy]) ?
+			                       PROP_TABLE[propCannon1][propEnemy] : PROP_TABLE[propCannon2][propEnemy];
+			setRadioButtonValue(attr, propCannonBetter);
 
 			// アビ覚設定
 			attack_org.value = '';
@@ -733,9 +755,12 @@
 			}
 			else {
 				var data = cannon.value.split('_');
-				var propCannon = parseInt(data[5]);
+				var propCannon1 = parseInt(data[5]);
+				var propCannon2 = parseInt(data[11]);
 				var propEnemy = parseInt(dmg.prop.value);
-				setRadioButtonValue(attr, PROP_TABLE[propCannon][propEnemy]);
+				var propCannonBetter = (PROP_TABLE[propCannon1][propEnemy] > PROP_TABLE[propCannon2][propEnemy]) ?
+				                       PROP_TABLE[propCannon1][propEnemy] : PROP_TABLE[propCannon2][propEnemy];
+				setRadioButtonValue(attr, propCannonBetter);
 			}
 		}
 	}
@@ -855,6 +880,9 @@
 
 		var art = dmg.elements["artifact" + number];
 		art.options[0].selected = true;
+
+		var rapid = dmg.elements["rapid" + number];
+		rapid.options[0].selected = true;
 
 		if (number == 1){
 			var tr_cannon = document.getElementById("moveCannon" + number);
@@ -1220,6 +1248,21 @@
 			var weak     = parseFloat(dmg.elements["weak" + i].value);
 			if (attr >= 1) weak = 1;
 
+			// 連射対応
+			var papidFlag;
+			var rapidSkill;
+			var rapidTimes;
+			var rapidTmp = dmg.elements["rapid" + i].value.split("x");
+			papidFlag = (rapidTmp.length == 2) ? true : false;
+			if (papidFlag){
+				rapidSkill = parseFloat(rapidTmp[0]);
+				rapidTimes = parseInt(rapidTmp[1]);
+			}
+			else {
+				rapidSkill = 1;
+				rapidTimes = 1;
+			}
+
 			// リーダーがカグヤの場合に対応
 			var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + (chain * 0.02));
 
@@ -1234,12 +1277,17 @@
 			}
 			else {
 				result = (
-					Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF)
+					Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF * rapidSkill)
 					- Math.ceil(guard * down)
 				);
 			}
 
 			if (result < 1) result = 1;
+
+			if (papidFlag){
+				result = result * rapidTimes;
+			}
+
 			result_all = result_all + result;
 		}
 
@@ -1299,6 +1347,21 @@
 				var weak     = parseFloat(dmg.elements["weak" + i].value);
 				if (attr >= 1) weak = 1;
 
+				// 連射対応
+				var papidFlag;
+				var rapidSkill;
+				var rapidTimes;
+				var rapidTmp = dmg.elements["rapid" + i].value.split("x");
+				papidFlag = (rapidTmp.length == 2) ? true : false;
+				if (papidFlag){
+					rapidSkill = parseFloat(rapidTmp[0]);
+					rapidTimes = parseInt(rapidTmp[1]);
+				}
+				else {
+					rapidSkill = 1;
+					rapidTimes = 1;
+				}
+
 				// リーダーがカグヤの場合に対応
 				var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + (chain * 0.02));
 
@@ -1317,12 +1380,17 @@
 				}
 				else {
 					damage = (
-						Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF)
+						Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF * rapidSkill)
 						- Math.ceil(guard * down)
 					);
 				}
 
 				if (damage < 1) damage = 1;
+
+				if (papidFlag){
+					damage = damage * rapidTimes;
+				}
+
 				damage_all = damage_all + damage;
 			}
 			if (result <= damage_all){
@@ -1374,6 +1442,21 @@
 		var weak     = parseFloat(dmg.weak1.value);
 		if (attr >= 1) weak = 1;
 
+		// 連射対応
+		var papidFlag;
+		var rapidSkill;
+		var rapidTimes;
+		var rapidTmp = dmg.rapid1.value.split("x");
+		papidFlag = (rapidTmp.length == 2) ? true : false;
+		if (papidFlag){
+			rapidSkill = parseFloat(rapidTmp[0]);
+			rapidTimes = parseInt(rapidTmp[1]);
+		}
+		else {
+			rapidSkill = 1;
+			rapidTimes = 1;
+		}
+
 		// リーダーがカグヤの場合に対応
 		var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + (chain * 0.02));
 
@@ -1388,7 +1471,7 @@
 		}
 		else {
 			pureDamage = (
-			Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF)
+			Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF * rapidSkill)
 			);
 		}
 
@@ -1484,13 +1567,36 @@
 		}
 	}
 
-
 	// フィルタリング初期化
 	function setFilter(){
 		initLeaders();
 		initCannons();
 		for (var i = 1; i <= 6; i++){
 			filteringCannonData(i);
+		}
+	}
+
+
+	// 連射初期化
+	function initRapids(){
+		for (var i = 1; i <= 6; i++){
+			var select = document.damage.elements["rapid" + i];
+
+			var option = document.createElement('option');
+
+			option.setAttribute('value', "");
+			option.innerHTML = "非連射";
+
+			select.appendChild(option);
+
+			for (var j = 0; j < rapids.length; j++){
+				option = document.createElement('option');
+
+				option.setAttribute('value', rapids[j][1] + "x" + rapids[j][2]);
+				option.innerHTML = rapids[j][1] + "倍を" + rapids[j][2] + "連射";
+
+				select.appendChild(option);
+			}
 		}
 	}
 
