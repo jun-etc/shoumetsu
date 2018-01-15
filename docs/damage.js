@@ -396,6 +396,8 @@
 			wait(200);
 		}
 
+		copyUp(to, from);
+
 		if (dmg.elements["btnDetail" + from].value == "閉じる"){
 			openDetail(to);
 			dmg.elements["addFixedPercent" + to].value = dmg.elements["addFixedPercent" + from].value;
@@ -468,7 +470,6 @@
 		var weak_sel_to = dmg.elements["weak" + to].selectedIndex;
 		var addC_val_to = dmg.elements["addChain" + to].value;
 		var artf_sel_to = dmg.elements["artifact" + to].selectedIndex;
-
 
 
 		copyCannonData(from, to);
@@ -942,7 +943,6 @@
 	var L_NI5   = -5;
 	var L_NI6   = -6;
 	var L_NI61  = -12;
-	var L_CHUCK = -99;
 	var L_CHIYO_H1 = -7;
 	var L_CHIYO_H2 = -8;
 	var L_CHIYO_H3 = -14;
@@ -952,6 +952,11 @@
 	var L_KANO61 = -13;
 	var L_SAYU6 = -11;
 	var L_M_SUMIRE = -16;
+	var L_H_MIYABI = -17;
+	var L_T_MIRAI = -18
+
+	var L_CHUCK = -99;
+
 
 	function calcLeader(type, chain){
 		var rate = 1;
@@ -1027,6 +1032,14 @@
 			if (chain > 40) chain = 40;
 			rate = 2.5 + (0.7 * (chain / 40));
 		}
+		else if (type == L_H_MIYABI){
+			if (chain > 60) chain = 60;
+			rate = 2.5 + (0.7 * (chain / 60));
+		}
+		else if (type == L_T_MIRAI){
+			if (chain > 90) chain = 90;
+			rate = 1 + (2.5 * (chain / 90));
+		}
 
 		return rate;
 	}
@@ -1083,7 +1096,7 @@
 
 	// 倍率上昇スキル連動
 	function copyUpAllFrom1st(){
-		for (var i = 2; i <= 6; i++){
+		for (var i = 2; i <= document.damage.member.value; i++){
 			copyUp(i, 1);
 		}
 	}
@@ -1218,6 +1231,7 @@
 		// 念の為明示的に文字列→数値変換
 		var leader   = parseFloat(dmg.leader.value);
 		var friend   = parseFloat(dmg.friend.value);
+		var field    = parseFloat(dmg.field.value);
 		var combo    = calcCombo();
 		var chain    = parseInt(dmg.chain.value);
 		var guard    = parseInt(dmg.guard.value);
@@ -1277,7 +1291,7 @@
 			}
 			else {
 				result = (
-					Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF * rapidSkill)
+					Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF * rapidSkill * field)
 					- Math.ceil(guard * down)
 				);
 			}
@@ -1308,6 +1322,7 @@
 		// 念の為明示的に文字列→数値変換
 		var leader   = parseFloat(dmg.leader.value);
 		var friend   = parseFloat(dmg.friend.value);
+		var field    = parseFloat(dmg.field.value);
 		var combo    = calcCombo();
 		var guard    = parseInt(dmg.guard.value);
 		var result   = parseInt(dmg.result.value);
@@ -1380,7 +1395,7 @@
 				}
 				else {
 					damage = (
-						Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF * rapidSkill)
+						Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF * rapidSkill * field)
 						- Math.ceil(guard * down)
 					);
 				}
@@ -1415,6 +1430,7 @@
 		// 念の為明示的に文字列→数値変換
 		var leader   = parseFloat(dmg.leader.value);
 		var friend   = parseFloat(dmg.friend.value);
+		var field    = parseFloat(dmg.field.value);
 		var combo    = calcCombo();
 		var chain    = parseInt(dmg.chain.value);
 		var result   = parseInt(dmg.result.value);
@@ -1471,7 +1487,7 @@
 		}
 		else {
 			pureDamage = (
-			Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF * rapidSkill)
+			Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF * rapidSkill * field)
 			);
 		}
 
