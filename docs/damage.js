@@ -950,6 +950,7 @@
 	var L_KANO5 = -9;
 	var L_KANO6 = -10;
 	var L_KANO61 = -13;
+	var L_KANO62 = -19;
 	var L_SAYU6 = -11;
 	var L_M_SUMIRE = -16;
 	var L_H_MIYABI = -17;
@@ -1015,6 +1016,10 @@
 		else if (type == L_KANO61){
 			if (chain > 90) chain = 90;
 			rate = 3 + (chain / 90);
+		}
+		else if (type == L_KANO62){
+			if (chain > 90) chain = 90;
+			rate = 3.2 + (0.8 * (chain / 90));
 		}
 		else if (type == L_SAYU6){
 			if (chain > 60) chain = 60;
