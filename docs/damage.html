@@ -62,6 +62,13 @@
 </td>
 </tr>
 
+<tr>
+<td>被ダメージUP</td>
+<td>
+<input type="text" name="damageUp" pattern="^[0-9]+$" maxlength="2" style="width: 4ex;" value="0">%</select>
+</td>
+</tr>
+
 <tr id="tr_combo" style="display:none">
 <td>combo数(up率)</td>
 <td><input type="text" name="comboNum" pattern="^[0-9]+$" maxlength="3" style="width: 4ex;" value="0">(<input type="text" name="comboUp" pattern="^[\\.0-9]+$" maxlength="4" style="width: 4ex;" value="0">%)<input type="button" value="ｸﾘｱ" onClick="clearCombo();">
@@ -143,6 +150,7 @@
 <option value="10">10</option>
 <option value="11">11</option>
 <option value="12">12</option>
+<option value="15">15</option>
 <option value="16">16</option>
 <option value="-3">5 →50ﾁｪｲﾝで 7</option>
 <option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
@@ -402,6 +410,7 @@
 <option value="10">10</option>
 <option value="11">11</option>
 <option value="12">12</option>
+<option value="15">15</option>
 <option value="16">16</option>
 <option value="-3">5 →50ﾁｪｲﾝで 7</option>
 <option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
@@ -661,6 +670,7 @@
 <option value="10">10</option>
 <option value="11">11</option>
 <option value="12">12</option>
+<option value="15">15</option>
 <option value="16">16</option>
 <option value="-3">5 →50ﾁｪｲﾝで 7</option>
 <option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
@@ -920,6 +930,7 @@
 <option value="10">10</option>
 <option value="11">11</option>
 <option value="12">12</option>
+<option value="15">15</option>
 <option value="16">16</option>
 <option value="-3">5 →50ﾁｪｲﾝで 7</option>
 <option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
@@ -1179,6 +1190,7 @@
 <option value="10">10</option>
 <option value="11">11</option>
 <option value="12">12</option>
+<option value="15">15</option>
 <option value="16">16</option>
 <option value="-3">5 →50ﾁｪｲﾝで 7</option>
 <option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
@@ -1438,6 +1450,7 @@
 <option value="10">10</option>
 <option value="11">11</option>
 <option value="12">12</option>
+<option value="15">15</option>
 <option value="16">16</option>
 <option value="-3">5 →50ﾁｪｲﾝで 7</option>
 <option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
@@ -1781,6 +1794,12 @@ Cookieの保存期間は60日間です。<br />
 <a href="./">サイトTOPへ</a>
 <hr />
 ・更新履歴<br />
+2018/03/22<br />
+　攻撃スキル倍率に15を追加<br />
+　被ダメージUP欄を追加<br />
+2018/02/15<br />
+　ノストラダムスの固定ダメージがチェイン数によって変化する様に修正<br />
+　倍率上昇スキルでｿｳﾏRを指定した時、指定値によっては倍率が2倍以上になるバグを修正<br />
 2018/01/30<br />
 　リーダー&amp;フレンド倍率に3.2 →90ﾁｪｲﾝで 4を追加<br />
 2017/12/03<br />

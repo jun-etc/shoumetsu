@@ -591,6 +591,20 @@
 	}
 
 
+	// チェイン数変化固定ダメージ対応
+	function calcFixedChain(number, chain){
+		var dmg = document.damage;
+		var cannonName = dmg.elements["cannon" + number].options[dmg.elements["cannon" + number].selectedIndex].text;
+		var fixedDamage = dmg.elements["addFixedPercent" + number].value;
+
+		if (cannonName.indexOf('ノストラダムス') > 0 && fixedDamage == 666666){
+			fixedDamage = fixedDamage * (Math.floor(chain / 30) + 1);
+		}
+
+		return fixedDamage;
+	}
+
+
 	// アビ覚倍率
 	function getAbilityPower(len){
 		var pow = 10;
@@ -1075,6 +1089,9 @@
 			ret = up;
 		}
 		else if (up == UP_SOUMA){
+			if (chainS > 100){
+				chainS = 100;
+			}
 			ret = 1 + (Math.floor(chainS / 10) * 10 * 0.01);
 		}
 
@@ -1237,6 +1254,7 @@
 		var leader   = parseFloat(dmg.leader.value);
 		var friend   = parseFloat(dmg.friend.value);
 		var field    = parseFloat(dmg.field.value);
+		var damageUp = parseFloat(1 + (dmg.damageUp.value / 100))
 		var combo    = calcCombo();
 		var chain    = parseInt(dmg.chain.value);
 		var guard    = parseInt(dmg.guard.value);
@@ -1260,7 +1278,7 @@
 			var upS      = parseInt(dmg.elements["upSouma" + i].value);
 			var up       = parseFloat(calcUp(dmg.elements["up" + i].value, upS));
 			var down     = parseFloat(dmg.elements["down" + i].value);
-			var addFP    = parseInt(dmg.elements["addFixedPercent" + i].value);
+			var addFP    = calcFixedChain(i, chain);
 			var addL     = parseFloat(dmg.elements["addLeader" + i].value);
 			var addF     = parseFloat(dmg.elements["addFriend" + i].value);
 			var critical = parseInt(getRadioButtonValue(dmg.elements["critical" + i]));
@@ -1296,7 +1314,7 @@
 			}
 			else {
 				result = (
-					Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF * rapidSkill * field)
+					Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF * rapidSkill * field * damageUp)
 					- Math.ceil(guard * down)
 				);
 			}
@@ -1328,6 +1346,7 @@
 		var leader   = parseFloat(dmg.leader.value);
 		var friend   = parseFloat(dmg.friend.value);
 		var field    = parseFloat(dmg.field.value);
+		var damageUp = parseFloat(1 + (dmg.damageUp.value / 100))
 		var combo    = calcCombo();
 		var guard    = parseInt(dmg.guard.value);
 		var result   = parseInt(dmg.result.value);
@@ -1360,7 +1379,7 @@
 				var upS      = parseInt(dmg.elements["upSouma" + i].value);
 				var up       = parseFloat(calcUp(dmg.elements["up" + i].value, upS));
 				var down     = parseFloat(dmg.elements["down" + i].value);
-				var addFP    = parseInt(dmg.elements["addFixedPercent" + i].value);
+				var addFP    = calcFixedChain(i, chain);
 				var addL     = parseFloat(dmg.elements["addLeader" + i].value);
 				var addF     = parseFloat(dmg.elements["addFriend" + i].value);
 				var critical = parseInt(getRadioButtonValue(dmg.elements["critical" + i]));
@@ -1400,7 +1419,7 @@
 				}
 				else {
 					damage = (
-						Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF * rapidSkill * field)
+						Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF * rapidSkill * field * damageUp)
 						- Math.ceil(guard * down)
 					);
 				}
@@ -1436,6 +1455,7 @@
 		var leader   = parseFloat(dmg.leader.value);
 		var friend   = parseFloat(dmg.friend.value);
 		var field    = parseFloat(dmg.field.value);
+		var damageUp = parseFloat(1 + (dmg.damageUp.value / 100))
 		var combo    = calcCombo();
 		var chain    = parseInt(dmg.chain.value);
 		var result   = parseInt(dmg.result.value);
@@ -1456,7 +1476,7 @@
 		var upS      = parseInt(dmg.upSouma1.value);
 		var up       = parseFloat(calcUp(dmg.up1.value, upS));
 		var down     = parseFloat(dmg.down1.value);
-		var addFP    = parseInt(dmg.addFixedPercent1.value);
+		var addFP    = calcFixedChain(1, chain);
 		var addL     = parseFloat(dmg.addLeader1.value);
 		var addF     = parseFloat(dmg.addFriend1.value);
 		var critical = parseInt(getRadioButtonValue(dmg.critical1));
@@ -1492,7 +1512,7 @@
 		}
 		else {
 			pureDamage = (
-			Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF * rapidSkill * field)
+			Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF * rapidSkill * field * damageUp)
 			);
 		}
 
