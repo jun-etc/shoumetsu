@@ -601,7 +601,7 @@
 			fixedDamage = fixedDamage * (Math.floor(chain / 30) + 1);
 		}
 
-		return fixedDamage;
+		return parseInt(fixedDamage);
 	}
 
 
@@ -1177,7 +1177,7 @@
 							return num + "体目の攻撃力の入力値が不正です";
 						}
 					}
-					if (!(dmg.elements["addFixedPercent" + num].value.match(/^[\+\-\%\.\d]+$/) && parseInt(dmg.elements["addFixedPercent" + num].value) >= 0)){
+					if (!(dmg.elements["addFixedPercent" + num].value.match(/^[\%\d]+$/) && parseInt(dmg.elements["addFixedPercent" + num].value) >= 0)){
 						return num + "体目の固定属性･割合の入力値が不正です";
 					}
 
@@ -1215,6 +1215,12 @@
 					else if (dmg.elements[i].name == "comboUp"){
 						return "combo数(up率)の入力値が不正です";
 					}
+					else if (dmg.elements[i].name == "damageUp"){
+						return "被ダメージUPの入力値が不正です";
+					}
+					else if (dmg.elements[i].name == "chainPlus"){
+						return "チェインプラスの入力値が不正です";
+					}
 					else if (dmg.elements[i].name.match(/^addChain\d$/)){
 						num = dmg.elements[i].name.slice(-1);
 						return num + "体目の追加chain数の入力値が不正です";
@@ -1251,13 +1257,14 @@
 		}
 
 		// 念の為明示的に文字列→数値変換
-		var leader   = parseFloat(dmg.leader.value);
-		var friend   = parseFloat(dmg.friend.value);
-		var field    = parseFloat(dmg.field.value);
-		var damageUp = parseFloat(1 + (dmg.damageUp.value / 100))
-		var combo    = calcCombo();
-		var chain    = parseInt(dmg.chain.value);
-		var guard    = parseInt(dmg.guard.value);
+		var leader    = parseFloat(dmg.leader.value);
+		var friend    = parseFloat(dmg.friend.value);
+		var field     = parseFloat(dmg.field.value);
+		var damageUp  = parseFloat(1 + (dmg.damageUp.value / 100));
+		var chainPlus = parseInt(dmg.chainPlus.value);
+		var combo     = calcCombo();
+		var chain     = parseInt(dmg.chain.value);
+		var guard     = parseInt(dmg.guard.value);
 
 		var result_all = 0;
 
@@ -1301,7 +1308,7 @@
 			}
 
 			// リーダーがカグヤの場合に対応
-			var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + (chain * 0.02));
+			var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + ((chain + chainPlus) * 0.02));
 
 			// 計算
 			var result;
@@ -1343,13 +1350,14 @@
 		}
 
 		// 念の為明示的に文字列→数値変換
-		var leader   = parseFloat(dmg.leader.value);
-		var friend   = parseFloat(dmg.friend.value);
-		var field    = parseFloat(dmg.field.value);
-		var damageUp = parseFloat(1 + (dmg.damageUp.value / 100))
-		var combo    = calcCombo();
-		var guard    = parseInt(dmg.guard.value);
-		var result   = parseInt(dmg.result.value);
+		var leader    = parseFloat(dmg.leader.value);
+		var friend    = parseFloat(dmg.friend.value);
+		var field     = parseFloat(dmg.field.value);
+		var damageUp  = parseFloat(1 + (dmg.damageUp.value / 100));
+		var chainPlus = parseInt(dmg.chainPlus.value);
+		var combo     = calcCombo();
+		var guard     = parseInt(dmg.guard.value);
+		var result    = parseInt(dmg.result.value);
 
 		// 計算
 		var isUpper = false;
@@ -1402,7 +1410,7 @@
 				}
 
 				// リーダーがカグヤの場合に対応
-				var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + (chain * 0.02));
+				var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + ((chain + chainPlus) * 0.02));
 
 				// 計算
 				if (dmg.elements["addFixedPercent" + i].value.slice(-1) == "%"){
@@ -1452,13 +1460,14 @@
 		}
 
 		// 念の為明示的に文字列→数値変換
-		var leader   = parseFloat(dmg.leader.value);
-		var friend   = parseFloat(dmg.friend.value);
-		var field    = parseFloat(dmg.field.value);
-		var damageUp = parseFloat(1 + (dmg.damageUp.value / 100))
-		var combo    = calcCombo();
-		var chain    = parseInt(dmg.chain.value);
-		var result   = parseInt(dmg.result.value);
+		var leader    = parseFloat(dmg.leader.value);
+		var friend    = parseFloat(dmg.friend.value);
+		var field     = parseFloat(dmg.field.value);
+		var damageUp  = parseFloat(1 + (dmg.damageUp.value / 100));
+		var chainPlus = parseInt(dmg.chainPlus.value);
+		var combo     = calcCombo();
+		var chain     = parseInt(dmg.chain.value);
+		var result    = parseInt(dmg.result.value);
 
 		// 追加チェイン数対応
 		chain += parseInt(dmg.addChain1.value);
@@ -1499,7 +1508,7 @@
 		}
 
 		// リーダーがカグヤの場合に対応
-		var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + (chain * 0.02));
+		var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + ((chain + chainPlus) * 0.02));
 
 		// 計算
 		var pureDamage;

@@ -65,7 +65,14 @@
 <tr>
 <td>被ダメージUP</td>
 <td>
-<input type="text" name="damageUp" pattern="^[0-9]+$" maxlength="2" style="width: 4ex;" value="0">%</select>
+<input type="text" name="damageUp" pattern="^[0-9]+$" maxlength="2" style="width: 4ex;" value="0">%
+</td>
+</tr>
+
+<tr>
+<td>チェインプラス</td>
+<td>
+<input type="text" name="chainPlus" pattern="^[0-9]+$" maxlength="2" style="width: 4ex;" value="0">chain
 </td>
 </tr>
 
@@ -207,7 +214,7 @@
 <tr>
 <td>固定属性･割合</td>
 <td>
-<input type="text" name="addFixedPercent1" value="0" pattern="^[\+\-\%0-9]*$" maxlength="8" style="width: 8em;">
+<input type="text" name="addFixedPercent1" value="0" pattern="^[\%0-9]*$" maxlength="8" style="width: 8em;">
 &nbsp;<a href="#fixpercent"><font size="2">※3</font></a>
 </td>
 </tr>
@@ -467,7 +474,7 @@
 <tr>
 <td>固定属性･割合</td>
 <td>
-<input type="text" name="addFixedPercent2" value="0" pattern="^[\+\-\%0-9]*$" maxlength="8" style="width: 8em;">
+<input type="text" name="addFixedPercent2" value="0" pattern="^[\%0-9]*$" maxlength="8" style="width: 8em;">
 &nbsp;<a href="#fixpercent"><font size="2">※3</font></a>
 </td>
 </tr>
@@ -727,7 +734,7 @@
 <tr>
 <td>固定属性･割合</td>
 <td>
-<input type="text" name="addFixedPercent3" value="0" pattern="^[\+\-\%0-9]*$" maxlength="8" style="width: 8em;">
+<input type="text" name="addFixedPercent3" value="0" pattern="^[\%0-9]*$" maxlength="8" style="width: 8em;">
 &nbsp;<a href="#fixpercent"><font size="2">※3</font></a>
 </td>
 </tr>
@@ -987,7 +994,7 @@
 <tr>
 <td>固定属性･割合</td>
 <td>
-<input type="text" name="addFixedPercent4" value="0" pattern="^[\+\-\%0-9]*$" maxlength="8" style="width: 8em;">
+<input type="text" name="addFixedPercent4" value="0" pattern="^[\%0-9]*$" maxlength="8" style="width: 8em;">
 &nbsp;<a href="#fixpercent"><font size="2">※3</font></a>
 </td>
 </tr>
@@ -1247,7 +1254,7 @@
 <tr>
 <td>固定属性･割合</td>
 <td>
-<input type="text" name="addFixedPercent5" value="0" pattern="^[\+\-\%0-9]*$" maxlength="8" style="width: 8em;">
+<input type="text" name="addFixedPercent5" value="0" pattern="^[\%0-9]*$" maxlength="8" style="width: 8em;">
 &nbsp;<a href="#fixpercent"><font size="2">※3</font></a>
 </td>
 </tr>
@@ -1507,7 +1514,7 @@
 <tr>
 <td>固定属性･割合</td>
 <td>
-<input type="text" name="addFixedPercent6" value="0" pattern="^[\+\-\%0-9]*$" maxlength="8" style="width: 8em;">
+<input type="text" name="addFixedPercent6" value="0" pattern="^[\%0-9]*$" maxlength="8" style="width: 8em;">
 &nbsp;<a href="#fixpercent"><font size="2">※3</font></a>
 </td>
 </tr>
@@ -1794,6 +1801,10 @@ Cookieの保存期間は60日間です。<br />
 <a href="./">サイトTOPへ</a>
 <hr />
 ・更新履歴<br />
+2018/07/14<br />
+　チェイン数逆算時、割合ダメージが含まれていると正常に計算できなくなっていたバグの修正<br />
+2018/06/12<br />
+　チェインプラス欄を追加<br />
 2018/06/06<br />
 　リーダー&amp;フレンド倍率に4.2を追加<br />
 2018/04/12<br />
@@ -1882,7 +1893,7 @@ Cookieの保存期間は60日間です。<br />
 2016/09/24<br />
 　攻撃スキル倍率に10を追加<br />
 2016/09/09<br />
-　チェイン数逆算時、割合ダメージを2体以上設定した場合に計算が間違うバグを修正(thx!<a href="http://twitter.com/ToshittaRIVER" target="_blank">@ToshittaRIVER</a>)<br />
+　チェイン数逆算時、割合ダメージを2体以上設定した場合に正しくない結果が表示されるバグを修正(thx!<a href="http://twitter.com/ToshittaRIVER" target="_blank">@ToshittaRIVER</a>)<br />
 2016/09/01-2<br />
 　リーダー&amp;フレンド倍率に3.25と3.75を追加<br />
 2016/09/01-1<br />
