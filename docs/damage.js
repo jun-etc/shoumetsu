@@ -912,37 +912,52 @@
 
 	// combo機能のUI関連
 	function clickCombo(){
-		var dmg = document.damage;
-		var now = dmg.elements["btnCombo"];
-		var tr_cmb = document.getElementById('tr_combo');
+		var cmbSet = document.damage.btnCombo;
+		var cmbTr = "none";
 
-		if (now.value == "combo有"){
-			now.value = "combo無";
-			tr_cmb.style.display = "table-row";
+		if (cmbSet.value == "combo等他開"){
+			cmbSet.value = "combo等他閉";
+			cmbTr = "table-row";
 
 		}
 		else {
-			now.value = "combo有";
-			tr_cmb.style.display = "none";
+			cmbSet.value = "combo等他開";
+			cmbTr = "none";
+		}
+
+		var element = document.getElementsByClassName("set_combo");
+		for (var i = 0; i < element.length; i++){
+			element[i].style.display = cmbTr;
 		}
 	}
 
 	function clearCombo(){
 		var dmg = document.damage;
-		dmg.comboNum.value = 0;
 		dmg.comboUp.value = 0;
+		dmg.comboMax.value = 0;
+		dmg.comboNum.value = 0;
 	}
 
 	// comboボーナス計算
-	function calcCombo(){
-		var tr_cmb = document.getElementById('tr_combo');
+	function calcCombo(cmbNow){
+		var dmg = document.damage;
 		var ret = 1;
 
-		if (tr_cmb.style.display != "none"){
-			var dmg = document.damage;
-			var cmbNum = parseInt(dmg.comboNum.value);
-			var cmbUp = parseFloat(dmg.comboUp.value);
-			ret = (1 + (cmbNum * (cmbUp / 100)));
+		var cmbMax = parseInt(dmg.comboMax.value);
+		var cmbNum = parseInt(dmg.comboNum.value);
+		var cmbUp = parseFloat(dmg.comboUp.value);
+
+		if (cmbMax == 0 || cmbUp == 0) return ret;
+
+		if (dmg.btnCombo.value == "combo等他閉"){
+
+			cmbNow += cmbNum;
+
+			if (cmbNow > cmbMax){
+				cmbNow = cmbMax
+			}
+
+			ret = (1 + (cmbNow * (cmbUp / 100)));
 		}
 
 		return ret;
@@ -951,6 +966,7 @@
 
 	// リーダー倍率計算
 	var L_AMI   = -1;
+	var L_AMI6   = -21;
 	var L_JURI5 = -2;
 	var L_JURI6 = -3;
 	var L_CHIYO6 = -4;
@@ -965,6 +981,7 @@
 	var L_KANO6 = -10;
 	var L_KANO61 = -13;
 	var L_KANO62 = -19;
+	var L_KANO63 = -20;
 	var L_SAYU6 = -11;
 	var L_M_SUMIRE = -16;
 	var L_H_MIYABI = -17;
@@ -982,6 +999,10 @@
 		else if (type == L_AMI){
 			if (chain > 60) chain = 60;
 			rate = 1 + (chain / 30);
+		}
+		else if (type == L_AMI6){
+			if (chain > 100) chain = 100;
+			rate = 1 + (3 * (chain / 100));
 		}
 		else if (type == L_JURI5){
 			if (chain > 50) chain = 50;
@@ -1034,6 +1055,10 @@
 		else if (type == L_KANO62){
 			if (chain > 90) chain = 90;
 			rate = 3.2 + (0.8 * (chain / 90));
+		}
+		else if (type == L_KANO63){
+			if (chain > 60) chain = 60;
+			rate = 3.2 + (0.8 * (chain / 60));
 		}
 		else if (type == L_SAYU6){
 			if (chain > 60) chain = 60;
@@ -1209,11 +1234,11 @@
 					else if (dmg.elements[i].name == "result"){
 						return "与ダメージの入力値が不正です";
 					}
-					else if (dmg.elements[i].name == "comboNum"){
-						return "combo数の入力値が不正です";
+					else if (dmg.elements[i].name == "comboMax"){
+						return "最大combo数の入力値が不正です";
 					}
-					else if (dmg.elements[i].name == "comboUp"){
-						return "combo数(up率)の入力値が不正です";
+					else if (dmg.elements[i].name == "comboNum"){
+						return "現在combo数の入力値が不正です";
 					}
 					else if (dmg.elements[i].name == "damageUp"){
 						return "被ダメージUPの入力値が不正です";
@@ -1262,10 +1287,10 @@
 		var field     = parseFloat(dmg.field.value);
 		var damageUp  = parseFloat(1 + (dmg.damageUp.value / 100));
 		var chainPlus = parseInt(dmg.chainPlus.value);
-		var combo     = calcCombo();
 		var chain     = parseInt(dmg.chain.value);
 		var guard     = parseInt(dmg.guard.value);
 
+		var comboNow  = 0;
 		var result_all = 0;
 
 		for (var i = 1; i <= dmg.member.value; i++){
@@ -1307,6 +1332,8 @@
 				rapidTimes = 1;
 			}
 
+			comboNow += rapidTimes;
+
 			// リーダーがカグヤの場合に対応
 			var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + ((chain + chainPlus) * 0.02));
 
@@ -1321,7 +1348,7 @@
 			}
 			else {
 				result = (
-					Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF * rapidSkill * field * damageUp)
+					Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * calcCombo(comboNow) * addL * addF * rapidSkill * field * damageUp)
 					- Math.ceil(guard * down)
 				);
 			}
@@ -1355,11 +1382,11 @@
 		var field     = parseFloat(dmg.field.value);
 		var damageUp  = parseFloat(1 + (dmg.damageUp.value / 100));
 		var chainPlus = parseInt(dmg.chainPlus.value);
-		var combo     = calcCombo();
 		var guard     = parseInt(dmg.guard.value);
 		var result    = parseInt(dmg.result.value);
 
 		// 計算
+		var comboNow  = 0;
 		var isUpper = false;
 		var damage = 0;
 		var chain = 0;
@@ -1409,6 +1436,8 @@
 					rapidTimes = 1;
 				}
 
+				comboNow += rapidTimes;
+
 				// リーダーがカグヤの場合に対応
 				var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + ((chain + chainPlus) * 0.02));
 
@@ -1427,7 +1456,7 @@
 				}
 				else {
 					damage = (
-						Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF * rapidSkill * field * damageUp)
+						Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * calcCombo(comboNow) * addL * addF * rapidSkill * field * damageUp)
 						- Math.ceil(guard * down)
 					);
 				}
@@ -1465,9 +1494,10 @@
 		var field     = parseFloat(dmg.field.value);
 		var damageUp  = parseFloat(1 + (dmg.damageUp.value / 100));
 		var chainPlus = parseInt(dmg.chainPlus.value);
-		var combo     = calcCombo();
 		var chain     = parseInt(dmg.chain.value);
 		var result    = parseInt(dmg.result.value);
+
+		var comboNow  = 0;
 
 		// 追加チェイン数対応
 		chain += parseInt(dmg.addChain1.value);
@@ -1507,6 +1537,8 @@
 			rapidTimes = 1;
 		}
 
+		comboNow += rapidTimes;
+
 		// リーダーがカグヤの場合に対応
 		var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + ((chain + chainPlus) * 0.02));
 
@@ -1521,11 +1553,123 @@
 		}
 		else {
 			pureDamage = (
-			Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * combo * addL * addF * rapidSkill * field * damageUp)
+			Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * calcCombo(comboNow) * addL * addF * rapidSkill * field * damageUp)
 			);
 		}
 
 		dmg.guard.value = Math.floor((pureDamage - result) / down);
+	}
+
+
+	// combo数逆算
+	function calcComboNumber(){
+		var dmg = document.damage;
+
+		var error = validInput("");
+		if (error){
+			alert(error);
+			return;
+		}
+
+		// 念の為明示的に文字列→数値変換
+		var leader    = parseFloat(dmg.leader.value);
+		var friend    = parseFloat(dmg.friend.value);
+		var field     = parseFloat(dmg.field.value);
+		var damageUp  = parseFloat(1 + (dmg.damageUp.value / 100));
+		var chainPlus = parseInt(dmg.chainPlus.value);
+		var chain     = parseInt(dmg.chain.value);
+		var guard     = parseInt(dmg.guard.value);
+		var result    = parseInt(dmg.result.value);
+
+		var comboMax = parseInt(dmg.comboMax.value);
+
+		// 計算
+		var comboNow  = 0;
+		var isUpper = false;
+		var damage = 0;
+
+		while (comboNow <= comboMax){
+			var damage_all = 0;
+			var result_percent = 0
+
+			for (var i = 1; i <= dmg.member.value; i++){
+				// 追加チェイン数対応
+				chain += parseInt(dmg.elements["addChain" + i].value);
+				if (chain > MAX_CHAIN){
+					chain = MAX_CHAIN;
+				}
+				else if (chain < 0){
+					chain = 0;
+				}
+
+				var attack   = parseInt(dmg.elements["attack" + i].value);
+				attack      += parseInt(dmg.elements["artifact" + i].value);
+				var attr     = parseFloat(getRadioButtonValue(dmg.elements["attr" + i]));
+				var skill    = calcSkillChain(i, chain);
+				var upS      = parseInt(dmg.elements["upSouma" + i].value);
+				var up       = parseFloat(calcUp(dmg.elements["up" + i].value, upS));
+				var down     = parseFloat(dmg.elements["down" + i].value);
+				var addFP    = calcFixedChain(i, chain);
+				var addL     = parseFloat(dmg.elements["addLeader" + i].value);
+				var addF     = parseFloat(dmg.elements["addFriend" + i].value);
+				var critical = parseInt(getRadioButtonValue(dmg.elements["critical" + i]));
+				var weak     = parseFloat(dmg.elements["weak" + i].value);
+				if (attr >= 1) weak = 1;
+
+				// 連射対応
+				var papidFlag;
+				var rapidSkill;
+				var rapidTimes;
+				var rapidTmp = dmg.elements["rapid" + i].value.split("x");
+				papidFlag = (rapidTmp.length == 2) ? true : false;
+				if (papidFlag){
+					rapidSkill = parseFloat(rapidTmp[0]);
+					rapidTimes = parseInt(rapidTmp[1]);
+				}
+				else {
+					rapidSkill = 1;
+					rapidTimes = 1;
+				}
+
+				comboNow += rapidTimes;
+
+				// リーダーがカグヤの場合に対応
+				var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + ((chain + chainPlus) * 0.02));
+
+				// 計算
+				if (dmg.elements["addFixedPercent" + i].value.slice(-1) == "%"){
+					if (!result_percent){
+						damage = Math.floor(result * (addFP / 100));
+					}
+					else {
+						damage = Math.floor(result_percent * (addFP / 100));
+					}
+					result_percent = result - damage;
+				}
+				else if (addFP > 0){
+					damage = Math.floor(addFP * attr) - Math.ceil(guard * down);
+				}
+				else {
+					damage = (
+						Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * calcCombo(comboNow) * addL * addF * rapidSkill * field * damageUp)
+						- Math.ceil(guard * down)
+					);
+				}
+
+				if (damage < 1) damage = 1;
+
+				if (papidFlag){
+					damage = damage * rapidTimes;
+				}
+
+				damage_all = damage_all + damage;
+			}
+			if (result <= damage_all){
+				isUpper = true;
+				break;
+			}
+		}
+		dmg.comboNum.value = (isUpper == true) ? (comboNow -1) : 99;
 	}
 
 

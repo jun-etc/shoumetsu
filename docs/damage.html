@@ -32,7 +32,7 @@
 <option value="6">6</option>
 </select>体
 &nbsp;
-<input type="button" value="combo有" name="btnCombo" onClick="clickCombo();">
+<input type="button" value="combo等他開" name="btnCombo" onClick="clickCombo();">
 </td>
 </tr>
 
@@ -62,27 +62,39 @@
 </td>
 </tr>
 
-<tr>
+<tr class="set_combo" style="display:none">
 <td>被ダメージUP</td>
 <td>
 <input type="text" name="damageUp" pattern="^[0-9]+$" maxlength="2" style="width: 4ex;" value="0">%
 </td>
 </tr>
 
-<tr>
+<tr class="set_combo" style="display:none">
 <td>チェインプラス</td>
 <td>
 <input type="text" name="chainPlus" pattern="^[0-9]+$" maxlength="2" style="width: 4ex;" value="0">chain
 </td>
 </tr>
 
-<tr id="tr_combo" style="display:none">
-<td>combo数(up率)</td>
-<td><input type="text" name="comboNum" pattern="^[0-9]+$" maxlength="3" style="width: 4ex;" value="0">(<input type="text" name="comboUp" pattern="^[\\.0-9]+$" maxlength="4" style="width: 4ex;" value="0">%)<input type="button" value="ｸﾘｱ" onClick="clearCombo();">
+<tr class="set_combo" style="display:none">
+<td>combo倍率</td>
+<td><input type="text" name="comboUp" pattern="^[\\.0-9]+$" maxlength="4" style="width: 4ex;" value="0">%
+&nbsp;<input type="button" value="comboｸﾘｱ" onClick="clearCombo();">
 &nbsp;<a href="#cmbinfo"><font size="2">※1</font></a>
 </td>
 </tr>
 
+<tr class="set_combo" style="display:none">
+<td>最大combo数</td>
+<td><input type="text" name="comboMax" pattern="^[0-9]+$" maxlength="2" style="width: 4ex;" value="0">
+</td>
+</tr>
+
+<tr class="set_combo" style="display:none">
+<td>現在combo数</td>
+<td><input type="text" name="comboNum" pattern="^[0-9]+$" maxlength="2" style="width: 4ex;" value="0">
+</td>
+</tr>
 
 
 <tr>
@@ -1663,7 +1675,7 @@
 <td>
 <input type="text" name="chain" value="0" pattern="^[0-9]*$" maxlength="3" style="width: 3em;">
 &nbsp;
-<input type="checkbox" name="kaguya" id="leaderKaguya"><label for="leaderKaguya">Lｶｸﾞﾔ</label>
+<input type="checkbox" name="kaguya" id="leaderKaguya"><label for="leaderKaguya">Lｶｸﾞﾔ等</label>
 </td>
 </tr>
 
@@ -1703,6 +1715,14 @@
 <td><input type="button" value="　入力初期化　" onClick="location.href='damage.html';"></td>
 </tr>
 
+<tr class="set_combo" style="display:none">
+<td colspan="2"></td>
+</tr>
+
+<tr class="set_combo" style="display:none">
+<td colspan="2"><input type="button" value="combo数逆算" onClick="calcComboNumber();"></td>
+</tr>
+
 
 </table>
 </form>
@@ -1730,25 +1750,41 @@
 <hr />
 ・使用上の注意<br />
 <a id="cmbinfo">→combo機能について</a><br />
-「combo有」ボタンを押すことで、<br />
-combo機能を使用する事ができます。<br />
-左の入力欄には計算したいcombo数を、<br />
-右の()内の入力欄には<br />
+「combo等他開」ボタンを押すことで、<br />
+combo機能・被ダメージUP・チェインプラス<br />
+等を使用する事ができます。<br />
+combo機能は大変複雑になりました。<br />
+その代わり複数体での攻撃の場合も<br />
+正常に計算できるようになりました。<br />
+combo倍率欄には<br />
 リーダーとフレンドの<br />
-攻撃力アップ率の合計を<br />
+攻撃力アップ率(%)の合計を<br />
 入力してください。<br />
+最大combo数欄はそのままの意味です。<br />
+現在combo数欄なのですが、<br />
+攻撃を開始する時の数であり、<br />
+攻撃がヒットした時の数ではありません。<br />
 ※例…combo攻撃力アップ率が<br />
 　リーダー1%、フレンド0.5%で<br />
-　10combo時のダメージを計算する場合、<br />
-　左の入力欄に10、<br />
-　右の入力欄に1.5と入力。<br />
+　comboが20まで発生し、<br />
+　10comboからダメージを計算する場合、<br />
+　combo倍率欄に1.5、<br />
+　最大combo数欄に20、<br />
+　現在combo数欄に10、<br />
+　と入力してください。<br />
 各入力欄に数値が入力されていても、<br />
-「combo無」の状態では、<br />
-ダメージの計算に<br />
-combo機能は反映されません。<br />
-一時的にcombo有り/無しリーダーを<br />
+「combo等他閉」の状態では、<br />
+各計算にcombo機能は反映されません。<br />
+一時的にcombo有り/無しを<br />
 切り替えて計算する<br />
 場合にご利用ください。<br />
+また、combo数逆算機能が付きました。<br />
+チェイン数・敵防御力・与ダメージを入力し、<br />
+combo数逆算をすることで、<br />
+そのチェイン数での何combo目で<br />
+敵を撃破できるかの計算ができます。<br />
+そのチェイン数では撃破ができない場合、<br />
+現在combo数が99になります。<br />
 <br />
 <a id="upsoumar">→倍率上昇スキルのｿｳﾏRについて</a><br />
 倍率上昇スキルにてｿｳﾏR<br />
@@ -1801,6 +1837,12 @@ Cookieの保存期間は60日間です。<br />
 <a href="./">サイトTOPへ</a>
 <hr />
 ・更新履歴<br />
+2019/02/04<br />
+　リーダー&amp;フレンド倍率に1 →100ﾁｪｲﾝで 4を追加<br />
+2018/11/23<br />
+　リーダー&amp;フレンド倍率に3.2 →60ﾁｪｲﾝで 4を追加<br />
+2018/11/03<br />
+　combo機能を大幅に追加・修正<br />
 2018/07/14<br />
 　チェイン数逆算時、割合ダメージが含まれていると正常に計算できなくなっていたバグの修正<br />
 2018/06/12<br />
