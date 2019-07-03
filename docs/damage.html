@@ -4,7 +4,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=yes" />
 <meta charset="UTF-8" />
 
-<script language="JavaScript" type="text/javascript" src="rapid.js"></script>
 <script language="JavaScript" type="text/javascript" src="leader.js"></script>
 <script language="JavaScript" type="text/javascript" src="cannon.js"></script>
 <script language="JavaScript" type="text/javascript" src="cookie.js"></script>
@@ -21,7 +20,7 @@
 <table border="0">
 
 <tr>
-<td>攻撃タマシイ数</a></td>
+<td>攻撃タマシイ数</td>
 <td>
 <select name="member" onChange="setMemberNumber();">
 <option value="1" selected="selected">1</option>
@@ -171,6 +170,7 @@
 <option value="12">12</option>
 <option value="15">15</option>
 <option value="16">16</option>
+<option value="20">20</option>
 <option value="-3">5 →50ﾁｪｲﾝで 7</option>
 <option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
 <option value="-2">ﾐｳ</option>
@@ -298,18 +298,24 @@
 </tr>
 
 <tr>
-<td>ｸﾘﾃｨｶﾙ(弱克)</td>
+<td>ｸﾘﾃｨｶﾙ</td>
 <td>
 <input type="radio" name="critical1" value="1" id="crit_off1" checked="checked"><label for="crit_off1"><font size="-1">無</font></label>&nbsp;
 <input type="radio" name="critical1" value="2" id="crit_on1"><label for="crit_on1"><font size="-1">有</font></label>&nbsp;
-&nbsp;(<select name="weak1">
+</td>
+</tr>
+
+<tr>
+<td>弱点克服</td>
+<td>
+<select name="weak1">
 <option value="1" selected="selected">無</option>
 <option value="1.2">1</option>
 <option value="1.4">2</option>
 <option value="1.6">3</option>
 <option value="1.8">4</option>
 <option value="2.0">5</option>
-</select>)
+</select>
 </td>
 </tr>
 
@@ -336,8 +342,8 @@
 <tr>
 <td>連射</td>
 <td>
-<select name="rapid1">
-</select>
+<input type="text" name="rapidMag1" value="1" pattern="^[\.0-9]+$" maxlength="3" style="width: 3em;">倍を<input type="text" name="rapidNum1" value="1" pattern="^[0-9]+$" maxlength="2" style="width: 2em;">連射
+&nbsp;<a href="#rapidinfo"><font size="2">※5</font></a>
 </td>
 </tr>
 
@@ -431,6 +437,7 @@
 <option value="12">12</option>
 <option value="15">15</option>
 <option value="16">16</option>
+<option value="20">20</option>
 <option value="-3">5 →50ﾁｪｲﾝで 7</option>
 <option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
 <option value="-2">ﾐｳ</option>
@@ -558,18 +565,24 @@
 </tr>
 
 <tr>
-<td>ｸﾘﾃｨｶﾙ(弱克)</td>
+<td>ｸﾘﾃｨｶﾙ</td>
 <td>
 <input type="radio" name="critical2" value="1" id="crit_off2" checked="checked"><label for="crit_off2"><font size="-1">無</font></label>&nbsp;
 <input type="radio" name="critical2" value="2" id="crit_on2"><label for="crit_on2"><font size="-1">有</font></label>&nbsp;
-&nbsp;(<select name="weak2">
+</td>
+</tr>
+
+<tr>
+<td>弱点克服</td>
+<td>
+<select name="weak2">
 <option value="1" selected="selected">無</option>
 <option value="1.2">1</option>
 <option value="1.4">2</option>
 <option value="1.6">3</option>
 <option value="1.8">4</option>
 <option value="2.0">5</option>
-</select>)
+</select>
 </td>
 </tr>
 
@@ -596,8 +609,8 @@
 <tr>
 <td>連射</td>
 <td>
-<select name="rapid2">
-</select>
+<input type="text" name="rapidMag2" value="1" pattern="^[\.0-9]+$" maxlength="3" style="width: 3em;">倍を<input type="text" name="rapidNum2" value="1" pattern="^[0-9]+$" maxlength="2" style="width: 2em;">連射
+&nbsp;<a href="#rapidinfo"><font size="2">※5</font></a>
 </td>
 </tr>
 
@@ -691,6 +704,7 @@
 <option value="12">12</option>
 <option value="15">15</option>
 <option value="16">16</option>
+<option value="20">20</option>
 <option value="-3">5 →50ﾁｪｲﾝで 7</option>
 <option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
 <option value="-2">ﾐｳ</option>
@@ -818,18 +832,24 @@
 </tr>
 
 <tr>
-<td>ｸﾘﾃｨｶﾙ(弱克)</td>
+<td>ｸﾘﾃｨｶﾙ</td>
 <td>
 <input type="radio" name="critical3" value="1" id="crit_off3" checked="checked"><label for="crit_off3"><font size="-1">無</font></label>&nbsp;
 <input type="radio" name="critical3" value="2" id="crit_on3"><label for="crit_on3"><font size="-1">有</font></label>&nbsp;
-&nbsp;(<select name="weak3">
+</td>
+</tr>
+
+<tr>
+<td>弱点克服</td>
+<td>
+<select name="weak3">
 <option value="1" selected="selected">無</option>
 <option value="1.2">1</option>
 <option value="1.4">2</option>
 <option value="1.6">3</option>
 <option value="1.8">4</option>
 <option value="2.0">5</option>
-</select>)
+</select>
 </td>
 </tr>
 
@@ -856,8 +876,8 @@
 <tr>
 <td>連射</td>
 <td>
-<select name="rapid3">
-</select>
+<input type="text" name="rapidMag3" value="1" pattern="^[\.0-9]+$" maxlength="3" style="width: 3em;">倍を<input type="text" name="rapidNum3" value="1" pattern="^[0-9]+$" maxlength="2" style="width: 2em;">連射
+&nbsp;<a href="#rapidinfo"><font size="2">※5</font></a>
 </td>
 </tr>
 
@@ -951,6 +971,7 @@
 <option value="12">12</option>
 <option value="15">15</option>
 <option value="16">16</option>
+<option value="20">20</option>
 <option value="-3">5 →50ﾁｪｲﾝで 7</option>
 <option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
 <option value="-2">ﾐｳ</option>
@@ -1078,18 +1099,24 @@
 </tr>
 
 <tr>
-<td>ｸﾘﾃｨｶﾙ(弱克)</td>
+<td>ｸﾘﾃｨｶﾙ</td>
 <td>
 <input type="radio" name="critical4" value="1" id="crit_off4" checked="checked"><label for="crit_off4"><font size="-1">無</font></label>&nbsp;
 <input type="radio" name="critical4" value="2" id="crit_on4"><label for="crit_on4"><font size="-1">有</font></label>&nbsp;
-&nbsp;(<select name="weak4">
+</td>
+</tr>
+
+<tr>
+<td>弱点克服</td>
+<td>
+<select name="weak4">
 <option value="1" selected="selected">無</option>
 <option value="1.2">1</option>
 <option value="1.4">2</option>
 <option value="1.6">3</option>
 <option value="1.8">4</option>
 <option value="2.0">5</option>
-</select>)
+</select>
 </td>
 </tr>
 
@@ -1116,8 +1143,8 @@
 <tr>
 <td>連射</td>
 <td>
-<select name="rapid4">
-</select>
+<input type="text" name="rapidMag4" value="1" pattern="^[\.0-9]+$" maxlength="3" style="width: 3em;">倍を<input type="text" name="rapidNum4" value="1" pattern="^[0-9]+$" maxlength="2" style="width: 2em;">連射
+&nbsp;<a href="#rapidinfo"><font size="2">※5</font></a>
 </td>
 </tr>
 
@@ -1211,6 +1238,7 @@
 <option value="12">12</option>
 <option value="15">15</option>
 <option value="16">16</option>
+<option value="20">20</option>
 <option value="-3">5 →50ﾁｪｲﾝで 7</option>
 <option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
 <option value="-2">ﾐｳ</option>
@@ -1338,18 +1366,24 @@
 </tr>
 
 <tr>
-<td>ｸﾘﾃｨｶﾙ(弱克)</td>
+<td>ｸﾘﾃｨｶﾙ</td>
 <td>
 <input type="radio" name="critical5" value="1" id="crit_off5" checked="checked"><label for="crit_off5"><font size="-1">無</font></label>&nbsp;
 <input type="radio" name="critical5" value="2" id="crit_on5"><label for="crit_on5"><font size="-1">有</font></label>&nbsp;
-&nbsp;(<select name="weak5">
+</td>
+</tr>
+
+<tr>
+<td>弱点克服</td>
+<td>
+<select name="weak5">
 <option value="1" selected="selected">無</option>
 <option value="1.2">1</option>
 <option value="1.4">2</option>
 <option value="1.6">3</option>
 <option value="1.8">4</option>
 <option value="2.0">5</option>
-</select>)
+</select>
 </td>
 </tr>
 
@@ -1376,8 +1410,8 @@
 <tr>
 <td>連射</td>
 <td>
-<select name="rapid5">
-</select>
+<input type="text" name="rapidMag5" value="1" pattern="^[\.0-9]+$" maxlength="3" style="width: 3em;">倍を<input type="text" name="rapidNum5" value="1" pattern="^[0-9]+$" maxlength="2" style="width: 2em;">連射
+&nbsp;<a href="#rapidinfo"><font size="2">※5</font></a>
 </td>
 </tr>
 
@@ -1471,6 +1505,7 @@
 <option value="12">12</option>
 <option value="15">15</option>
 <option value="16">16</option>
+<option value="20">20</option>
 <option value="-3">5 →50ﾁｪｲﾝで 7</option>
 <option value="-1">ｱﾆﾊﾞｰｻﾘｰｱﾐ</option>
 <option value="-2">ﾐｳ</option>
@@ -1598,18 +1633,24 @@
 </tr>
 
 <tr>
-<td>ｸﾘﾃｨｶﾙ(弱克)</td>
+<td>ｸﾘﾃｨｶﾙ</td>
 <td>
 <input type="radio" name="critical6" value="1" id="crit_off6" checked="checked"><label for="crit_off6"><font size="-1">無</font></label>&nbsp;
 <input type="radio" name="critical6" value="2" id="crit_on6"><label for="crit_on6"><font size="-1">有</font></label>&nbsp;
-&nbsp;(<select name="weak6">
+</td>
+</tr>
+
+<tr>
+<td>弱点克服</td>
+<td>
+<select name="weak6">
 <option value="1" selected="selected">無</option>
 <option value="1.2">1</option>
 <option value="1.4">2</option>
 <option value="1.6">3</option>
 <option value="1.8">4</option>
 <option value="2.0">5</option>
-</select>)
+</select>
 </td>
 </tr>
 
@@ -1636,8 +1677,8 @@
 <tr>
 <td>連射</td>
 <td>
-<select name="rapid6">
-</select>
+<input type="text" name="rapidMag6" value="1" pattern="^[\.0-9]+$" maxlength="3" style="width: 3em;">倍を<input type="text" name="rapidNum6" value="1" pattern="^[0-9]+$" maxlength="2" style="width: 2em;">連射
+&nbsp;<a href="#rapidinfo"><font size="2">※5</font></a>
 </td>
 </tr>
 
@@ -1735,11 +1776,19 @@
 
 <script language="JavaScript" type="text/javascript">
 <!--
-
 	initLeaders();
 	initCannons();
-	initRapids();
+//	initRapids();
 
+	(function() {
+		for (var i = 1; i <= 6; i++) {
+			(function(i) {
+				var ele = document.getElementById("searchCannonInput"+i);
+				ele.onkeydown = function(e) {return handleSearchCannonKeyDown(e, i);}
+				ele.onkeyup = function(e) {return handleSearchCannonKeyUp(e, i);}
+			})(i);
+		}
+	})();
 //-->
 </script>
 
@@ -1818,6 +1867,17 @@ combo数逆算をすることで、<br />
 その変動値を入力してください。<br />
 マイナス値にも対応しています。<br />
 <br />
+<a id="rapidinfo">→詳細設定＞連射について</a><br />
+攻撃力を元に、[n]倍を[n]連射したダメージを計算します。<br />
+※例1…ノゾムやキリカの場合、<br />
+　『[1.2]倍を[15]連射』と入力。<br />
+※例2…セツナや闇アリスの場合、<br />
+　『[1]倍を[2]連射』と入力。<br />
+但し、攻撃力を元に計算するため、<br />
+「固定属性･割合」の複数回攻撃には対応していません。<br />
+※例…パラレルセツナ<br />
+尚、連射中でもコンボ数は増え、その分ダメージも増します。<br />
+<br />
 <a id="calcchain">→チェイン数逆算機能について</a><br />
 結果が999の場合、<br />
 150チェインでも設定与ダメージ値を<br />
@@ -1837,6 +1897,20 @@ Cookieの保存期間は60日間です。<br />
 <a href="./">サイトTOPへ</a>
 <hr />
 ・更新履歴<br />
+2019/03/31<br />
+　攻撃スキル倍率に20を追加<br />
+2019/03/26<br />
+　各計算機能において[攻撃タマシイ数]が2以上かつ[固定属性･割合]を含む場合に計算結果が正しくない事があるバグの修正<br />
+　砲台の同上&amp;順番変更機能において[固定属性･割合][連射]の値が反映されないバグの修正<br />
+2019/03/22<br />
+　砲台検索機能においてキーボードでの操作を可能に(thx!<a href="http://twitter.com/hiroi01" target="_blank">@hiroi01</a>)<br />
+　IEでのみ砲台検索機能キーボード入力時に[Esc]を押すと異常な動作をしていたのを修正<br />
+2019/03/08<br />
+　攻撃タマシイ数を増やした際の処理を高速化<br />
+　チェイン数逆算及びcombo数逆算が正常に動作していなかったのを修正<br />
+2019/03/07<br />
+　連射機能の見直し/再実装と、それに伴うコンボ計算の修正<br />
+　ｸﾘﾃｨｶﾙ(弱克)を2項目に分割<br />
 2019/02/04<br />
 　リーダー&amp;フレンド倍率に1 →100ﾁｪｲﾝで 4を追加<br />
 2018/11/23<br />

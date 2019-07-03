@@ -217,20 +217,20 @@
 				}
 			}
 			// 連射対応
-			else if (data[2] == -1){
-				for (i = 0; i < rapids.length; i++){
-					var rapidDiv = rapids[i][0].split("_");
-					for (j = 0; j < rapidDiv.length; j++){
-						if (rapidDiv[j] == data[0]){
-							openDetail(number);
-							var rapidOpts = dmg.elements["rapid" + number].options;
-							rapidOpts[i + 1].selected = true;
-							break;
-						}
-					}
-				}
-				skillOpts[0].selected = true;
-			}
+//			else if (data[2] == -1){
+//				for (i = 0; i < rapids.length; i++){
+//					var rapidDiv = rapids[i][0].split("_");
+//					for (j = 0; j < rapidDiv.length; j++){
+//						if (rapidDiv[j] == data[0]){
+//							openDetail(number);
+//							var rapidOpts = dmg.elements["rapid" + number].options;
+//							rapidOpts[i + 1].selected = true;
+//							break;
+//						}
+//					}
+//				}
+//				skillOpts[0].selected = true;
+//			}
 			else {
 				for (i = 0; i < skillOpts.length; i++){
 					if (skillOpts[i].value == data[2]){
@@ -417,6 +417,9 @@
 			dmg.elements["weak" + to].selectedIndex = weak_sel_from;
 			dmg.elements["addChain" + to].value = addC_val_from;
 			dmg.elements["artifact" + to].selectedIndex = artf_sel_from;
+
+			dmg.elements["rapidMag" + to].value = dmg.elements["rapidMag" + from].value;
+			dmg.elements["rapidNum" + to].value = dmg.elements["rapidNum" + from].value;
 		}
 	}
 
@@ -451,26 +454,32 @@
 		var up_sel_from = dmg.elements["up" + from].selectedIndex;
 		var upSouma_val_from = dmg.elements["upSouma" + from].value;
 		var down_sel_from = dmg.elements["down" + from].selectedIndex;
+
 		var openDetail_from = (dmg.elements["btnDetail" + from].value == "閉じる") ? true : false;
+		var addFP_val_from = dmg.elements["addFixedPercent" + from].value;
 		var addL_sel_from = dmg.elements["addLeader" + from].selectedIndex;
 		var addF_sel_from = dmg.elements["addFriend" + from].selectedIndex;
 		var crit_val_from = getRadioButtonValue(dmg.elements["critical" + from]);
 		var weak_sel_from = dmg.elements["weak" + from].selectedIndex;
 		var addC_val_from = dmg.elements["addChain" + from].value;
 		var artf_sel_from = dmg.elements["artifact" + from].selectedIndex;
+		var	rapM_val_from = dmg.elements["rapidMag" + from].value;
+		var	rapN_val_from = dmg.elements["rapidNum" + from].value;
 
 		var skill_sel_to = dmg.elements["skill" + to].selectedIndex;
 		var up_sel_to = dmg.elements["up" + to].selectedIndex;
 		var upSouma_val_to = dmg.elements["upSouma" + to].value;
 		var down_sel_to = dmg.elements["down" + to].selectedIndex;
 		var openDetail_to = (dmg.elements["btnDetail" + to].value == "閉じる") ? true : false;
+		var addFP_val_to = dmg.elements["addFixedPercent" + to].value;
 		var addL_sel_to = dmg.elements["addLeader" + to].selectedIndex;
 		var addF_sel_to = dmg.elements["addFriend" + to].selectedIndex;
 		var crit_val_to = getRadioButtonValue(dmg.elements["critical" + to]);
 		var weak_sel_to = dmg.elements["weak" + to].selectedIndex;
 		var addC_val_to = dmg.elements["addChain" + to].value;
 		var artf_sel_to = dmg.elements["artifact" + to].selectedIndex;
-
+		var	rapM_val_to = dmg.elements["rapidMag" + to].value;
+		var	rapN_val_to = dmg.elements["rapidNum" + to].value;
 
 		copyCannonData(from, to);
 
@@ -504,6 +513,7 @@
 		dmg.elements["down" + to].selectedIndex = down_sel_from;
 		if (openDetail_from){
 			openDetail(to);
+			dmg.elements["addFixedPercent" + to].value = addFP_val_from;
 			dmg.elements["addLeader" + to].selectedIndex = addL_sel_from;
 			linkAddLF('Leader', to, 'Org');
 			dmg.elements["addFriend" + to].selectedIndex = addF_sel_from;
@@ -512,6 +522,8 @@
 			dmg.elements["weak" + to].selectedIndex = weak_sel_from;
 			dmg.elements["addChain" + to].value = addC_val_from;
 			dmg.elements["artifact" + to].selectedIndex = artf_sel_from;
+			dmg.elements["rapidMag" + to].value = rapM_val_from;
+			dmg.elements["rapidNum" + to].value = rapN_val_from;
 		}
 		else {
 			closeDetail(to);
@@ -523,6 +535,7 @@
 		dmg.elements["down" + from].selectedIndex = down_sel_to;
 		if (openDetail_to){
 			openDetail(from);
+			dmg.elements["addFixedPercent" + from].value = addFP_val_to;
 			dmg.elements["addLeader" + from].selectedIndex = addL_sel_to;
 			linkAddLF('Leader', from, 'Org');
 			dmg.elements["addFriend" + from].selectedIndex = addF_sel_to;
@@ -531,6 +544,8 @@
 			dmg.elements["weak" + from].selectedIndex = weak_sel_to;
 			dmg.elements["addChain" + from].value = addC_val_to;
 			dmg.elements["artifact" + from].selectedIndex = artf_sel_to;
+			dmg.elements["rapidMag" + from].value = rapM_val_to;
+			dmg.elements["rapidNum" + from].value = rapN_val_to;
 		}
 		else {
 			closeDetail(from);
@@ -692,9 +707,11 @@
 					if (dmg.member.value >= number){
 						element[i].style.display = "table-row";
 					} else {
-						element[i].style.display = "none";
-						resetCannonData(number);
-						closeDetail(number);
+						if (element[i].style.display == "table-row"){
+							element[i].style.display = "none";
+							resetCannonData(number);
+							closeDetail(number);
+						}
 					}
 				}
 				tr_limit = document.getElementById("tr_limit" + number);
@@ -896,8 +913,12 @@
 		var art = dmg.elements["artifact" + number];
 		art.options[0].selected = true;
 
-		var rapid = dmg.elements["rapid" + number];
-		rapid.options[0].selected = true;
+//		var rapid = dmg.elements["rapid" + number];
+//		rapid.options[0].selected = true;
+
+		dmg.elements["rapidMag" + number].value = 1;
+		dmg.elements["rapidNum" + number].value = 1;
+
 
 		if (number == 1){
 			var tr_cannon = document.getElementById("moveCannon" + number);
@@ -945,7 +966,7 @@
 
 		var cmbMax = parseInt(dmg.comboMax.value);
 		var cmbNum = parseInt(dmg.comboNum.value);
-		var cmbUp = parseFloat(dmg.comboUp.value);
+		var cmbUp  = parseFloat(dmg.comboUp.value);
 
 		if (cmbMax == 0 || cmbUp == 0) return ret;
 
@@ -1224,6 +1245,18 @@
 						return "combo数(up率)の入力値が不正です";
 					}
 				}
+				else if (dmg.elements[i].name.match(/^rapidMag\d$/)){
+					if (!dmg.elements[i].value.match(/^[\.\d]+$/) || isReallyNaN(parseFloat(dmg.elements[i].value))){
+						num = dmg.elements[i].name.slice(-1);
+						return num + "体目の連射倍率の入力値が不正です";
+					}
+				}
+				else if (dmg.elements[i].name.match(/^rapidNum\d$/)){
+					if (!dmg.elements[i].value.match(/^[\d]+$/) || isReallyNaN(parseInt(dmg.elements[i].value))){
+						num = dmg.elements[i].name.slice(-1);
+						return num + "体目の連射数の入力値が不正です";
+					}
+				}
 				else if (!dmg.elements[i].value.match(/^[\+\-\%\d]+$/) || isReallyNaN(parseInt(dmg.elements[i].value))){
 					if (dmg.elements[i].name == "chain"){
 						return "chain数の入力値が不正です";
@@ -1290,10 +1323,13 @@
 		var chain     = parseInt(dmg.chain.value);
 		var guard     = parseInt(dmg.guard.value);
 
-		var comboNow  = 0;
+		var comboNow = 0;
+		var result_combo = 0;
 		var result_all = 0;
 
 		for (var i = 1; i <= dmg.member.value; i++){
+			var result = 0;
+
 			// 追加チェイン数対応
 			chain += parseInt(dmg.elements["addChain" + i].value);
 			if (chain > MAX_CHAIN){
@@ -1318,48 +1354,35 @@
 			if (attr >= 1) weak = 1;
 
 			// 連射対応
-			var papidFlag;
-			var rapidSkill;
-			var rapidTimes;
-			var rapidTmp = dmg.elements["rapid" + i].value.split("x");
-			papidFlag = (rapidTmp.length == 2) ? true : false;
-			if (papidFlag){
-				rapidSkill = parseFloat(rapidTmp[0]);
-				rapidTimes = parseInt(rapidTmp[1]);
-			}
-			else {
-				rapidSkill = 1;
-				rapidTimes = 1;
-			}
-
-			comboNow += rapidTimes;
+			var rapidSkill = parseFloat(dmg.elements["rapidMag" + i].value);
+			var rapidTimes = parseInt(dmg.elements["rapidNum" + i].value);
 
 			// リーダーがカグヤの場合に対応
 			var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + ((chain + chainPlus) * 0.02));
 
 			// 計算
-			var result;
 			if (dmg.elements["addFixedPercent" + i].value.slice(-1) == '%'){
 				alert("割合ダメージではダメージ計算できません");
 				return;
 			}
 			else if (addFP > 0){
+				comboNow++;
 				result = Math.floor(addFP * attr) - Math.ceil(guard * down);
+				if (result < 1) result = 1;
 			}
 			else {
-				result = (
-					Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * calcCombo(comboNow) * addL * addF * rapidSkill * field * damageUp)
-					- Math.ceil(guard * down)
-				);
+				for (var j = 0; j < rapidTimes; j++){
+					comboNow++;
+					result_combo = (
+						Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * calcCombo(comboNow) * addL * addF * rapidSkill * field * damageUp)
+						- Math.ceil(guard * down)
+					);
+					if (result_combo < 1) result_combo = 1;
+					result += result_combo;
+				}
 			}
 
-			if (result < 1) result = 1;
-
-			if (papidFlag){
-				result = result * rapidTimes;
-			}
-
-			result_all = result_all + result;
+			result_all += result;
 		}
 
 		dmg.result.value = result_all;
@@ -1386,18 +1409,20 @@
 		var result    = parseInt(dmg.result.value);
 
 		// 計算
-		var comboNow  = 0;
 		var isUpper = false;
-		var damage = 0;
 		var chain = 0;
 		var orgChain = 0;
 
 		for (; orgChain <= MAX_CHAIN; orgChain++){
 			chain = orgChain;
+			var comboNow = 0;
+			var damage_combo = 0;
 			var damage_all = 0;
 			var result_percent = 0
 
 			for (var i = 1; i <= dmg.member.value; i++){
+				var damage = 0;
+
 				// 追加チェイン数対応
 				chain += parseInt(dmg.elements["addChain" + i].value);
 				if (chain > MAX_CHAIN){
@@ -1422,27 +1447,15 @@
 				if (attr >= 1) weak = 1;
 
 				// 連射対応
-				var papidFlag;
-				var rapidSkill;
-				var rapidTimes;
-				var rapidTmp = dmg.elements["rapid" + i].value.split("x");
-				papidFlag = (rapidTmp.length == 2) ? true : false;
-				if (papidFlag){
-					rapidSkill = parseFloat(rapidTmp[0]);
-					rapidTimes = parseInt(rapidTmp[1]);
-				}
-				else {
-					rapidSkill = 1;
-					rapidTimes = 1;
-				}
-
-				comboNow += rapidTimes;
+				var rapidSkill = parseFloat(dmg.elements["rapidMag" + i].value);
+				var rapidTimes = parseInt(dmg.elements["rapidNum" + i].value);
 
 				// リーダーがカグヤの場合に対応
 				var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + ((chain + chainPlus) * 0.02));
 
 				// 計算
 				if (dmg.elements["addFixedPercent" + i].value.slice(-1) == "%"){
+					comboNow++;
 					if (!result_percent){
 						damage = Math.floor(result * (addFP / 100));
 					}
@@ -1452,23 +1465,25 @@
 					result_percent = result - damage;
 				}
 				else if (addFP > 0){
+					comboNow++;
 					damage = Math.floor(addFP * attr) - Math.ceil(guard * down);
+					if (damage < 1) damage = 1;
 				}
 				else {
-					damage = (
-						Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * calcCombo(comboNow) * addL * addF * rapidSkill * field * damageUp)
-						- Math.ceil(guard * down)
-					);
+					for (var j = 0; j < rapidTimes; j++){
+						comboNow++;
+						damage_combo = (
+							Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * calcCombo(comboNow) * addL * addF * rapidSkill * field * damageUp)
+							- Math.ceil(guard * down)
+						);
+						if (damage_combo < 1) damage_combo = 1;
+						damage += damage_combo;
+					}
 				}
 
-				if (damage < 1) damage = 1;
-
-				if (papidFlag){
-					damage = damage * rapidTimes;
-				}
-
-				damage_all = damage_all + damage;
+				damage_all += damage;
 			}
+
 			if (result <= damage_all){
 				isUpper = true;
 				break;
@@ -1523,21 +1538,8 @@
 		if (attr >= 1) weak = 1;
 
 		// 連射対応
-		var papidFlag;
-		var rapidSkill;
-		var rapidTimes;
-		var rapidTmp = dmg.rapid1.value.split("x");
-		papidFlag = (rapidTmp.length == 2) ? true : false;
-		if (papidFlag){
-			rapidSkill = parseFloat(rapidTmp[0]);
-			rapidTimes = parseInt(rapidTmp[1]);
-		}
-		else {
-			rapidSkill = 1;
-			rapidTimes = 1;
-		}
-
-		comboNow += rapidTimes;
+		var rapidSkill = parseFloat(dmg.rapidMag1.value);
+		var rapidTimes = parseInt(dmg.rapidNum1.value);
 
 		// リーダーがカグヤの場合に対応
 		var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + ((chain + chainPlus) * 0.02));
@@ -1548,10 +1550,15 @@
 			alert("割合ダメージでは敵防御力逆算できません");
 			return;
 		}
+		else if (rapidTimes > 1){
+			alert("連射では敵防御力逆算できません");
+			return;
+		}
 		else if (addFP > 0){
 			pureDamage = Math.floor(addFP * attr);
 		}
 		else {
+			comboNow++;
 			pureDamage = (
 			Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * calcCombo(comboNow) * addL * addF * rapidSkill * field * damageUp)
 			);
@@ -1586,13 +1593,15 @@
 		// 計算
 		var comboNow  = 0;
 		var isUpper = false;
-		var damage = 0;
 
-		while (comboNow <= comboMax){
+		while (comboNow < comboMax){
+			var damage_combo = 0;
 			var damage_all = 0;
 			var result_percent = 0
 
 			for (var i = 1; i <= dmg.member.value; i++){
+				var damage = 0;
+
 				// 追加チェイン数対応
 				chain += parseInt(dmg.elements["addChain" + i].value);
 				if (chain > MAX_CHAIN){
@@ -1617,27 +1626,15 @@
 				if (attr >= 1) weak = 1;
 
 				// 連射対応
-				var papidFlag;
-				var rapidSkill;
-				var rapidTimes;
-				var rapidTmp = dmg.elements["rapid" + i].value.split("x");
-				papidFlag = (rapidTmp.length == 2) ? true : false;
-				if (papidFlag){
-					rapidSkill = parseFloat(rapidTmp[0]);
-					rapidTimes = parseInt(rapidTmp[1]);
-				}
-				else {
-					rapidSkill = 1;
-					rapidTimes = 1;
-				}
-
-				comboNow += rapidTimes;
+				var rapidSkill = parseFloat(dmg.elements["rapidMag" + i].value);
+				var rapidTimes = parseInt(dmg.elements["rapidNum" + i].value);
 
 				// リーダーがカグヤの場合に対応
 				var chainBonus = (dmg.kaguya.checked) ? 1 : (1 + ((chain + chainPlus) * 0.02));
 
 				// 計算
 				if (dmg.elements["addFixedPercent" + i].value.slice(-1) == "%"){
+					comboNow++;
 					if (!result_percent){
 						damage = Math.floor(result * (addFP / 100));
 					}
@@ -1647,29 +1644,31 @@
 					result_percent = result - damage;
 				}
 				else if (addFP > 0){
+					comboNow++;
 					damage = Math.floor(addFP * attr) - Math.ceil(guard * down);
+					if (damage < 1) damage = 1;
 				}
 				else {
-					damage = (
-						Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * calcCombo(comboNow) * addL * addF * rapidSkill * field * damageUp)
-						- Math.ceil(guard * down)
-					);
+					for (var j = 0; j < rapidTimes; j++){
+						comboNow++;
+						damage_combo = (
+							Math.floor((attack * critical * weak) * calcLeader(leader, chain) * calcLeader(friend, chain) * chainBonus * attr * skill * up * calcCombo(comboNow) * addL * addF * rapidSkill * field * damageUp)
+							- Math.ceil(guard * down)
+						);
+						if (damage_combo < 1) damage_combo = 1;
+						damage += damage_combo;
+					}
 				}
 
-				if (damage < 1) damage = 1;
-
-				if (papidFlag){
-					damage = damage * rapidTimes;
-				}
-
-				damage_all = damage_all + damage;
+				damage_all += damage;
 			}
+
 			if (result <= damage_all){
 				isUpper = true;
 				break;
 			}
 		}
-		dmg.comboNum.value = (isUpper == true) ? (comboNow -1) : 99;
+		dmg.comboNum.value = (isUpper == true) ? (comboNow - 1) : 99;
 	}
 
 
@@ -1770,7 +1769,7 @@
 		}
 	}
 
-
+/*
 	// 連射初期化
 	function initRapids(){
 		for (var i = 1; i <= 6; i++){
@@ -1793,7 +1792,7 @@
 			}
 		}
 	}
-
+*/
 
 	// thanks to https://gist.github.com/kawanet/5553478
 	/** カタカナをひらがなに変換する関数
@@ -1815,15 +1814,28 @@
 			suggestList.style.display = "none";
 			setCannonData(number);
 			dmg.elements["searchCannonInput" + number].value = '';
+			dmg.elements["searchCannonInput" + number].blur();
+			dmg.elements["searchCannonInput" + number].focus();
 		}, 50, number, value);
 	};
 
 	function searchCannon(number){
+		var count = 0;
 		var suggestList = document.getElementById("searchCannonSuggest" + number);
+		suggestList.activeColor = "#66FFFF";
+		suggestList.activeColorByKey = "#50E1E1";
+		suggestList.nonactiveColor = "#FFFFFF";
+		suggestList.selectedNumber = -1;
+		suggestList.isEnableEnter = false;
+		suggestList.isEnableMouse = true;
 		while (suggestList.firstChild){
 			suggestList.removeChild(suggestList.firstChild);
 		}
 		suggestList.style.display = "none";
+		suggestList.onmouseover = function() {
+			suggestList.isEnableMouse = true;
+		};
+
 		var text = document.getElementById("searchCannonInput" + number).value;
 		var options = document.getElementById('selCannon' + number).options;
 		if (text == "") {
@@ -1831,17 +1843,107 @@
 		}
 		for (var i = 0; i < options.length; i++) {
 			if (katakanaToHiragana(options[i].text).indexOf(katakanaToHiragana(text)) != -1) {
-				var element = document.createElement('dev');
-				element.style.display = "block";
-				element.style.padding = "2px";
-				element.style.border = "outset 2px #FFFFFF";
-				element.innerHTML = options[i].text;
-				element.onclick = new Function('changeCannon('+number+', "'+options[i].value+'");');
-				element.onmouseover = new Function('this.style.backgroundColor = "#66FFFF"');
-				element.onmouseout = new Function('this.style.backgroundColor = "#FFFFFF"');
-				suggestList.appendChild(element);
-				suggestList.style.display = "block";
+				(function(n, i) {
+					var element = document.createElement('dev');
+					element.optionValue = options[i].value;
+					element.style.display = "block";
+					element.style.padding = "2px";
+					element.style.border = "outset 2px #FFFFFF";
+					element.innerHTML = options[i].text;
+					element.onclick = function() {
+						changeCannon(number, this.optionValue);
+					};
+					element.onmouseover = function() {
+						if (!suggestList.isEnableMouse) {
+							return;
+						}
+						suggestList.isEnableEnter = false;
+						if (suggestList.selectedNumber >= 0) {
+							suggestList.children[suggestList.selectedNumber].style.backgroundColor = suggestList.nonactiveColor;
+						}
+
+						suggestList.selectedNumber = n;
+						this.style.backgroundColor = suggestList.activeColor;
+					};
+					suggestList.appendChild(element);
+					suggestList.style.display = "block";
+				})(count, i);
+				count++;
 			}
+		}
+	}
+
+	function handleSearchCannonKeyDown(e, number) {
+		var i;
+		var suggestList = document.getElementById("searchCannonSuggest" + number);
+		var children = suggestList.children;
+		var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+		var scrollBottom = scrollTop + window.innerHeight;
+		var childTop, childBottom, childRect;
+
+		if (e) {
+			event = e;
+		}
+
+		var isUp = event.key == "ArrowUp" || event.key == "Up";
+		var isDown = event.key == "ArrowDown" || event.key == "Down";
+		var isEnter = event.key == "Enter";
+
+		if (!children || children.length == 0) {
+			return;
+		}
+
+		if (isUp || isDown) {
+			i = suggestList.selectedNumber;
+			if (i >= 0) {
+				children[i].style.backgroundColor = suggestList.nonactiveColor;
+			}
+
+			if (isDown) {
+				i++;
+				if (i >= children.length) {
+					i = 0;
+				}
+			} else {
+				i--;
+				if (i < 0) {
+					i = children.length - 1;
+				}
+			}
+			suggestList.selectedNumber = i;
+			children[i].style.backgroundColor = suggestList.activeColorByKey;
+			childRect = children[i].getBoundingClientRect();
+			childTop = childRect.top + scrollTop;
+			childBottom = childTop + childRect.height;
+			if (scrollBottom <  childBottom || scrollTop > childTop) {
+				children[i].scrollIntoView(isUp);
+			}
+			suggestList.isEnableEnter = true;
+			suggestList.isEnableMouse = false;
+			event.preventDefault();
+			return;
+		}
+
+		if (suggestList.isEnableEnter && isEnter) {
+			if (suggestList.selectedNumber >= 0) {
+				changeCannon(number, children[suggestList.selectedNumber].optionValue);
+				return;
+			}
+			return;
+		}
+	}
+
+	// for IE
+	function handleSearchCannonKeyUp(e, number) {
+		if (e) {
+			event = e;
+		}
+
+		if (event.key == "Esc" && document.getElementById("searchCannonInput" + number).value == ""){
+			document.getElementById("searchCannonInput" + number).blur();
+			document.getElementById("searchCannonInput" + number).focus();
+			searchCannon(number);
+			return;
 		}
 	}
 
